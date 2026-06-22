@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+:root{
+  --blue-50:#eff6ff;
+  --blue-100:#dbeafe;
+  --blue-500:#2563eb;
+  --blue-600:#1d4ed8;
+  --blue-700:#1e40af;
+
+  --green-50:#ecfdf5;
+  --green-500:#10b981;
+  --green-600:#059669;
+
+  --red-50:#fef2f2;
+  --red-500:#ef4444;
+
+  --bg:#f8fafc;
+
+  --surface:#ffffff;
+  --surface-soft:#f1f5f9;
+
+  --border:#e2e8f0;
+
+  --text-main:#0f172a;
+  --text-sub:#475569;
+  --text-muted:#94a3b8;
+
+  --shadow-card:
+    0 8px 24px rgba(15,23,42,.06);
+}
+
+/* 이 부분 복구 */
+.resume-container{
+  width:100%;
+  max-width:1120px;
+  margin:0 auto;
+  padding:34px 40px;
+}

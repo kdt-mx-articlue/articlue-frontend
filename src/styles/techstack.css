@@ -1,0 +1,81 @@
+/* =========================
+   Selected Tech
+========================= */
+
+.selected-tech-box{
+  margin-bottom:32px;
+}
+
+.selected-tech-title{
+  font-size:16px;
+  font-weight:800;
+
+  margin-bottom:12px;
+}
+
+/* =========================
+   Category
+========================= */
+
+.tech-category{
+  margin-bottom:32px;
+}
+
+.tech-category h3{
+  font-size:18px;
+  font-weight:900;
+
+  margin-bottom:14px;
+}
+
+/* =========================
+   Chip
+========================= */
+
+.chip-row{
+  display:flex;
+
+  flex-wrap:wrap;
+
+  gap:10px;
+}
+
+.chip{
+  border:1px solid
+    var(--border);
+
+  background:white;
+
+  color:
+    var(--text-main);
+
+  border-radius:999px;
+
+  padding:10px 16px;
+
+  cursor:pointer;
+
+  font-size:13px;
+  font-weight:700;
+
+  transition:
+    .2s;
+}
+
+.chip:hover{
+  border-color:
+    var(--blue-500);
+
+  transform:
+    translateY(-1px);
+}
+
+.chip.active{
+  background:
+    var(--blue-600);
+
+  border-color:
+    var(--blue-600);
+
+  color:white;
+}

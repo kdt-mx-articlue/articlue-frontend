@@ -1,0 +1,159 @@
+.resume-sidebar{
+  position:fixed;
+
+  top:120px;
+  right:32px;
+
+  width:260px;
+
+  max-height:calc(100vh - 250px);
+
+  overflow-y:auto;
+
+  background:var(--surface);
+
+  border:1px solid var(--border);
+
+  border-radius:24px;
+
+  padding:24px;
+
+  box-shadow:var(--shadow-card);
+
+  z-index:300;
+}
+
+.resume-sidebar-title{
+  font-size:18px;
+  font-weight:900;
+
+  margin-bottom:16px;
+}
+
+/* =========================
+   Progress
+========================= */
+
+.resume-sidebar-progress{
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  height:70px;
+
+  margin-bottom:20px;
+
+  border-radius:18px;
+
+  background:var(--surface-soft);
+
+  border:1px solid var(--border);
+}
+
+.resume-sidebar-progress strong{
+  font-size:28px;
+  font-weight:900;
+
+  color:var(--blue-600);
+}
+
+/* =========================
+   Navigation
+========================= */
+
+.resume-nav{
+  display:flex;
+  flex-direction:column;
+
+  gap:8px;
+}
+
+.resume-nav-item{
+  display:flex;
+
+  justify-content:space-between;
+  align-items:center;
+
+  padding:12px 14px;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+  transition:
+    background .2s,
+    color .2s;
+}
+
+.resume-nav-item:hover{
+  background:var(--surface-soft);
+}
+
+.resume-nav-item.active{
+  background:var(--blue-50);
+
+  color:var(--blue-600);
+
+  font-weight:900;
+}
+
+.resume-nav-item span:first-child{
+  font-size:14px;
+}
+
+/* =========================
+   Status
+========================= */
+
+.nav-complete{
+  color:#16a34a;
+
+  font-size:12px;
+  font-weight:800;
+}
+
+.nav-progress{
+  color:#2563eb;
+
+  font-size:12px;
+  font-weight:800;
+}
+
+.nav-empty{
+  color:#f59e0b;
+
+  font-size:12px;
+  font-weight:800;
+}
+
+/* =========================
+   Divider
+========================= */
+
+.resume-nav-divider{
+  height:1px;
+
+  background:var(--border);
+
+  margin:16px 0;
+}
+
+.resume-extra-title{
+  font-size:13px;
+  font-weight:800;
+
+  color:var(--text-sub);
+
+  margin-bottom:8px;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media(max-width:1400px){
+  .resume-sidebar{
+    display:none;
+  }
+}

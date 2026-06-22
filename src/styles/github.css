@@ -1,0 +1,178 @@
+/* =========================
+   Github Empty State
+========================= */
+
+.empty-box{
+  padding:32px;
+
+  text-align:center;
+
+  border:2px dashed
+    var(--border);
+
+  border-radius:24px;
+
+  background:
+    var(--surface-soft);
+}
+
+/* =========================
+   Connected Account
+========================= */
+
+.github-account-card{
+  margin-bottom:20px;
+}
+
+.github-account-title{
+  font-weight:700;
+
+  margin-bottom:8px;
+}
+
+.github-account-link{
+  display:inline-block;
+
+  margin-top:6px;
+
+  color:var(--blue-600);
+
+  font-weight:600;
+}
+
+/* =========================
+   Repository
+========================= */
+
+.github-repository-card{
+  margin-bottom:20px;
+}
+
+.github-repository-title{
+  font-weight:700;
+
+  margin-bottom:12px;
+}
+
+.github-repository-list{
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+}
+
+.github-repository-item{
+  padding:14px 16px;
+
+  border:1px solid
+    var(--border);
+
+  border-radius:14px;
+
+  background:white;
+
+  transition:.2s;
+}
+
+.github-repository-item:hover{
+  border-color:
+    var(--blue-500);
+
+  transform:
+    translateY(-1px);
+}
+
+.github-repository-name{
+  font-weight:700;
+
+  margin-bottom:4px;
+}
+
+.github-repository-description{
+  color:
+    var(--text-sub);
+
+  font-size:14px;
+
+  line-height:1.5;
+}
+
+/* =========================
+   Github Modal
+========================= */
+
+.modal-overlay{
+  position:fixed;
+
+  inset:0;
+
+  background:
+    rgba(0,0,0,.45);
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  z-index:5000;
+}
+
+.modal-container{
+  width:min(800px,90vw);
+
+  max-height:85vh;
+
+  overflow-y:auto;
+
+  background:white;
+
+  border-radius:24px;
+
+  padding:28px;
+
+  box-shadow:
+    0 30px 80px
+    rgba(0,0,0,.18);
+}
+
+.modal-header{
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  margin-bottom:24px;
+}
+
+.modal-header h3{
+  font-size:22px;
+
+  font-weight:900;
+}
+
+.modal-body{
+  margin-bottom:24px;
+}
+
+.modal-footer{
+  display:flex;
+
+  justify-content:flex-end;
+
+  gap:12px;
+}
+
+/* =========================
+   Repository Select
+========================= */
+
+.repeat-card.selected{
+  border-color:
+    var(--blue-500);
+
+  background:
+    var(--blue-50);
+}
