@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useResumeStore } from "../../../store/resumeStore";
@@ -12,9 +12,14 @@ import {
   validateResume,
 } from "../../../utils/resumeValidation";
 
+import { submitResume } from "../../../services/resumeApi";
+
 export default function FloatingSubmitBar() {
   const navigate =
     useNavigate();
+
+  const [submitting, setSubmitting] =
+    useState(false);
 
   const resume =
     useResumeStore(
@@ -39,42 +44,38 @@ export default function FloatingSubmitBar() {
     }, [resume]);
 
   const handleSubmit =
-    () => {
+    async () => {
       const result =
-        validateResume(
-            resume
-        );
+        validateResume(resume);
 
-        if (
-        !result.valid
-        ) {
+      if (!result.valid) {
         alert(
-            `필수 항목이 누락되었습니다.\n\n${result.errors.join(
-            "\n"
-            )}`
+          `필수 항목이 누락되었습니다.\n\n${result.errors.join("\n")}`
         );
-
         return;
-        }
+      }
 
-      console.log(
-        "최종 제출",
-        resume
-      );
+      try {
+        setSubmitting(true);
 
-      alert(
-        "이력서가 제출되었습니다."
-      );
+        await submitResume(resume);
 
-      resetResume();
+        alert("이력서가 제출되었습니다.");
 
-      localStorage.removeItem(
-        "articlue-resume-store"
-      );
+        resetResume();
+        localStorage.removeItem("articlue-resume-store");
+        navigate("/");
 
-      navigate(
-        "/"
-      );
+      } catch (error) {
+        console.error("이력서 제출 실패:", error);
+        const message =
+          error?.response?.data?.message ||
+          "이력서 제출에 실패했습니다. 다시 시도해주세요.";
+        alert(message);
+
+      } finally {
+        setSubmitting(false);
+      }
     };
 
   return (
@@ -138,11 +139,10 @@ export default function FloatingSubmitBar() {
       <button
         type="button"
         className="btn-primary"
-        onClick={
-          handleSubmit
-        }
+        onClick={handleSubmit}
+        disabled={submitting}
       >
-        최종 제출
+        {submitting ? "제출 중..." : "최종 제출"}
       </button>
     </div>
   );
