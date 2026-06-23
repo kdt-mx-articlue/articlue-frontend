@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { saveAuthUser } from "../../utils/auth.js";
+import { naverCallbackApi } from "../../services/authApi.js";
 
 export default function NaverCallback() {
   useEffect(() => {
@@ -32,30 +33,25 @@ export default function NaverCallback() {
       return;
     }
 
-    const naverUser = {
-      name: "네이버 사용자",
-      email: "naver@articlue.demo",
-      provider: "naver",
-      loginType: "naver",
-      authCode: code,
-      state,
-      loginAt: new Date().toISOString(),
-    };
-
-    saveAuthUser(naverUser);
-
     localStorage.removeItem("naver_oauth_state");
 
-    const savedRedirectPath = localStorage.getItem("redirectAfterLogin");
+    naverCallbackApi(code, state)
+      .then((result) => {
+        const user = result?.data || result;
+        saveAuthUser({ ...user, loginType: "naver" });
 
-    const redirectPath =
-      savedRedirectPath && savedRedirectPath !== "/login"
-        ? savedRedirectPath
-        : "/home";
-
-    localStorage.removeItem("redirectAfterLogin");
-
-    window.location.replace(redirectPath);
+        const savedRedirectPath = localStorage.getItem("redirectAfterLogin");
+        const redirectPath =
+          savedRedirectPath && savedRedirectPath !== "/login"
+            ? savedRedirectPath
+            : "/home";
+        localStorage.removeItem("redirectAfterLogin");
+        window.location.replace(redirectPath);
+      })
+      .catch((error) => {
+        console.error("네이버 로그인 실패:", error);
+        window.location.replace("/login");
+      });
   }, []);
 
   return (

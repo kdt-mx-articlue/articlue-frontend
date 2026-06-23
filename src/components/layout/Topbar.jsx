@@ -10,7 +10,6 @@ import {
   clearAuthStorage,
 } from "../../utils/auth";
 
-import { useResumeStore } from "../../store/resumeStore";
 
 export default function Topbar() {
   const navigate =
@@ -110,7 +109,6 @@ export default function Topbar() {
 
     if (!confirmed) return;
 
-    useResumeStore.getState().resetResume(); // ← 추가
     clearAuthStorage();
     navigate("/login");
   };

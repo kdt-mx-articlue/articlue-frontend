@@ -6,6 +6,8 @@ import {
   githubStorage,
 } from "../../../api/githubApi";
 
+import { getMemberId } from "../../../utils/auth";
+
 export default function GithubConnectModal({
   onClose,
 }) {
@@ -101,10 +103,7 @@ export default function GithubConnectModal({
           githubSessionId
         );
 
-        const memberId =
-          localStorage.getItem(
-            "memberId"
-          );
+        const memberId = getMemberId();
 
         console.log(
           "memberId",

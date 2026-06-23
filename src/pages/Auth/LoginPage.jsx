@@ -86,6 +86,7 @@ export default function LoginPage() {
         });
 
       const user =
+        data?.data ||
         data?.member ||
         data?.user ||
         data;
