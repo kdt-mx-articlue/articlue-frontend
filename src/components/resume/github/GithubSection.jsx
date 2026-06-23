@@ -8,21 +8,15 @@ export default function GithubSection() {
     setIsModalOpen,
   ] = useState(false);
 
-  const [
-    githubUser,
-    setGithubUser,
-  ] = useState(null);
+  const [githubUser, setGithubUser] = useState(() => {
+    const user = sessionStorage.getItem("githubUser");
+    return user ? JSON.parse(user) : null;
+  });
 
   useEffect(() => {
-    const user =
-      sessionStorage.getItem(
-        "githubUser"
-      );
-
-    if (user) {
-      setGithubUser(
-        JSON.parse(user)
-      );
+    if (!isModalOpen) {
+      const user = sessionStorage.getItem("githubUser");
+      setGithubUser(user ? JSON.parse(user) : null);
     }
   }, [isModalOpen]);
 

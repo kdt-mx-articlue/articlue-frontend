@@ -7,6 +7,7 @@ import {
 } from "../../../api/githubApi";
 
 import { getMemberId } from "../../../utils/auth";
+import { useResumeStore } from "../../../store/resumeStore";
 
 export default function GithubConnectModal({
   onClose,
@@ -103,6 +104,20 @@ export default function GithubConnectModal({
           githubSessionId
         );
 
+        // 인증 즉시 store에 저장
+        useResumeStore.getState().updateGithub({
+          connected: true,
+          login: socialUser?.login || "",
+          htmlUrl:
+            socialUser?.htmlUrl ||
+            socialUser?.html_url ||
+            "",
+          githubUserId:
+            socialUser?.id ||
+            socialUser?.githubUserId ||
+            null,
+        });
+
         const memberId = getMemberId();
 
         console.log(
@@ -110,10 +125,14 @@ export default function GithubConnectModal({
           memberId
         );
 
-        await githubStorage(
-          Number(memberId),
-          githubSessionId
-        );
+        try {
+          await githubStorage(
+            Number(memberId),
+            githubSessionId
+          );
+        } catch (storageError) {
+          console.error("github storage 저장 실패:", storageError);
+        }
 
         alert(
           "GitHub 연동 완료"
