@@ -44,7 +44,12 @@ export default function GithubConnectModal({
 
         startPolling(
           data.deviceCode,
-          data.interval
+          Math.max(
+            Number(
+              data.interval || 5
+            ),
+            15
+          )
         );
       } catch (error) {
         console.error(error);
@@ -57,79 +62,117 @@ export default function GithubConnectModal({
       }
     };
 
-  const startPolling =
-    (
-      deviceCode,
-      interval
-    ) => {
-      const timer =
-        setInterval(
-          async () => {
-            try {
-              const result =
-                await githubAuthToken(
-                  deviceCode
-                );
-
-              if (
-                !result.authenticated
-              ) {
-                return;
-              }
-
-              clearInterval(
-                timer
-              );
-
-              const githubData =
-                result.data;
-
-              const socialUser =
-                githubData.socialUser;
-
-              const githubSessionId =
-                githubData.githubSessionId;
-
-              sessionStorage.setItem(
-                "githubUser",
-                JSON.stringify(
-                  socialUser
-                )
-              );
-
-              sessionStorage.setItem(
-                "githubSessionId",
-                githubSessionId
-              );
-
-              const memberId =
-                localStorage.getItem(
-                  "memberId"
-                );
-
-              await githubStorage(
-                Number(
-                  memberId
-                ),
-                githubSessionId
-              );
-
-              alert(
-                "GitHub 연동 완료"
-              );
-
-              onClose();
-            } catch (
-              error
-            ) {
-              console.error(
-                error
-              );
-            }
-          },
-          interval * 1000
+  const startPolling = async (
+    deviceCode,
+    waitSeconds = 15
+  ) => {
+    try {
+      const result =
+        await githubAuthToken(
+          deviceCode
         );
-    };
+
+      console.log(
+        "github token result",
+        result
+      );
+
+      if (
+        result.authenticated
+      ) {
+        const githubData =
+          result.data;
+
+        const socialUser =
+          githubData.socialUser;
+
+        const githubSessionId =
+          githubData.githubSessionId;
+
+        sessionStorage.setItem(
+          "githubUser",
+          JSON.stringify(
+            socialUser
+          )
+        );
+
+        sessionStorage.setItem(
+          "githubSessionId",
+          githubSessionId
+        );
+
+        const memberId =
+          localStorage.getItem(
+            "memberId"
+          );
+
+        console.log(
+          "memberId",
+          memberId
+        );
+
+        await githubStorage(
+          Number(memberId),
+          githubSessionId
+        );
+
+        alert(
+          "GitHub 연동 완료"
+        );
+
+        onClose();
+
+        return;
+      }
+
+      const nextInterval =
+        result?.data?.interval
+          ? Number(
+              result.data.interval
+            )
+          : waitSeconds;
+
+      console.log(
+        `GitHub 인증 대기중... ${nextInterval}초 후 재시도`
+      );
+
+      setTimeout(() => {
+        startPolling(
+          deviceCode,
+          nextInterval
+        );
+      }, nextInterval * 1000);
+
+    } catch (error) {
+      console.error(error);
+
+      const message =
+        error?.response?.data
+          ?.message || "";
+
+      if (
+        message.includes(
+          "device_code"
+        ) ||
+        message.includes(
+          "expired"
+        )
+      ) {
+        alert(
+          "GitHub 인증이 만료되었습니다. 다시 시도해주세요."
+        );
+
+        return;
+      }
+
+      setTimeout(() => {
+        startPolling(
+          deviceCode,
+          waitSeconds
+        );
+      }, waitSeconds * 1000);
+    }
+  };
 
   return (
     <div className="modal-overlay">
