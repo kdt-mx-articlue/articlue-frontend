@@ -10,6 +10,8 @@ import {
   clearAuthStorage,
 } from "../../utils/auth";
 
+import { useResumeStore } from "../../store/resumeStore";
+
 export default function Topbar() {
   const navigate =
     useNavigate();
@@ -103,21 +105,15 @@ export default function Topbar() {
   const pageTitle =
     getPageTitle();
 
-  const handleLogout =
-    () => {
-      const confirmed =
-        window.confirm(
-          "로그아웃 하시겠습니까?"
-        );
+  const handleLogout = () => {
+    const confirmed = window.confirm("로그아웃 하시겠습니까?");
 
-      if (!confirmed) {
-        return;
-      }
+    if (!confirmed) return;
 
-      clearAuthStorage();
-
-      navigate("/login");
-    };
+    useResumeStore.getState().resetResume(); // ← 추가
+    clearAuthStorage();
+    navigate("/login");
+  };
 
   return (
     <header

@@ -13,6 +13,9 @@ export function clearAuthStorage() {
   localStorage.removeItem("naver_oauth_state");
   localStorage.removeItem("github_oauth_state");
 
+  // Zustand persist store 초기화
+  localStorage.removeItem("articlue-resume-store");
+
   sessionStorage.removeItem("githubUser");
   sessionStorage.removeItem("githubSessionId");
   sessionStorage.removeItem("githubDeviceCode");
@@ -53,7 +56,16 @@ export function saveAuthUser(user) {
   localStorage.setItem("articlue_profile_name", name);
   localStorage.setItem("articlue_login_type", loginType);
   localStorage.setItem("articlue_login_at", String(Date.now()));
-  localStorage.setItem("memberId", user.memberId);
+
+  const memberId =
+    user.memberId ??
+    user.member_id ??
+    user.id ??
+    null;
+
+  if (memberId !== null && memberId !== undefined) {
+    localStorage.setItem("memberId", memberId);
+  }
 }
 
 export function getCurrentUser() {

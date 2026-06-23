@@ -1,6 +1,20 @@
 export function getResumeSectionStatus(
   resume
 ) {
+  if (!resume) {
+    return {
+      github: "empty",
+      resumeInfo: "empty",
+      tech: "empty",
+      education: "empty",
+      experience: "empty",
+      coverLetter: "empty",
+      portfolio: "empty",
+      certificate: "empty",
+      career: "empty",
+    };
+  }
+
   return {
     github:
       resume.github.connected

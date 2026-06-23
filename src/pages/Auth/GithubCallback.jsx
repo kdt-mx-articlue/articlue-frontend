@@ -62,6 +62,11 @@ export default function GithubCallback() {
 
         githubUser = {
           ...githubUser,
+          memberId:
+            tokenUser?.memberId ||
+            tokenUser?.member_id ||
+            tokenUser?.id ||
+            null,
           name:
             tokenUser?.name ||
             tokenUser?.nickname ||
