@@ -1,6 +1,9 @@
 import { useState } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 
 import {
   getCurrentUser,
@@ -10,6 +13,9 @@ import {
 export default function Topbar() {
   const navigate =
     useNavigate();
+
+  const location =
+    useLocation();
 
   const [isOpen, setIsOpen] =
     useState(false);
@@ -31,6 +37,71 @@ export default function Topbar() {
 
   const profileInitial =
     userName.charAt(0).toUpperCase();
+
+  const getPageTitle = () => {
+    const path =
+      location.pathname;
+
+    if (path === "/") {
+      return "AI 커리어 홈";
+    }
+
+    if (
+      path.startsWith(
+        "/matching"
+      )
+    ) {
+      return "기업 탐색";
+    }
+
+    if (
+      path.startsWith(
+        "/report"
+      )
+    ) {
+      return "기업 적합도 분석";
+    }
+
+    if (
+      path.startsWith(
+        "/interview"
+      )
+    ) {
+      return "면접 준비";
+    }
+
+    if (
+      path.startsWith(
+        "/cover-letter"
+      ) ||
+      path.startsWith(
+        "/cover-letters"
+      )
+    ) {
+      return "자소서 관리";
+    }
+
+    if (
+      path.startsWith(
+        "/mypage"
+      )
+    ) {
+      return "마이페이지";
+    }
+
+    if (
+      path.startsWith(
+        "/resume"
+      )
+    ) {
+      return "커리어 프로필";
+    }
+
+    return "Articlue";
+  };
+
+  const pageTitle =
+    getPageTitle();
 
   const handleLogout =
     () => {
@@ -68,7 +139,7 @@ export default function Topbar() {
           text-slate-900
         "
       >
-        AI 커리어 홈
+        {pageTitle}
       </h2>
 
       <div className="relative">
