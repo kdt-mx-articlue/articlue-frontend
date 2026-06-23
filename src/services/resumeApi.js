@@ -81,17 +81,19 @@ export function buildResumePayload(resume) {
     // 경험
     experiences: resume.experiences,
 
-    // 경력
-    careers: resume.careers,
+    // 경력 (선택) - 실제 입력된 항목만
+    careers: resume.careers.filter((c) => c.companyName?.trim()),
 
-    // 자격증
-    certificates: resume.certificates,
+    // 자격증 (선택) - 실제 입력된 항목만
+    certificates: resume.certificates.filter((c) => c.certificateName?.trim()),
 
     // 자소서: { coverLetterId, items } → [{ items }]
     coverLetters: [resume.coverLetter],
 
-    // 포트폴리오
-    portfolioFiles: resume.portfolios,
+    // 포트폴리오 (선택) - 실제 입력된 항목만
+    portfolioFiles: resume.portfolios.filter(
+      (p) => p.portfolioUrl?.trim() || p.originalFileName?.trim()
+    ),
 
     // 기술스택
     techStacks: resume.techStack.techs,
