@@ -1,47 +1,51 @@
 import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 import {
-  clearAuthStorage,
   getCurrentUser,
-  getLoginType,
+  clearAuthStorage,
 } from "../../utils/auth";
 
 export default function Topbar() {
   const navigate =
     useNavigate();
 
-  const [open, setOpen] =
+  const [isOpen, setIsOpen] =
     useState(false);
 
   const user =
     getCurrentUser();
 
-  const loginType =
-    getLoginType();
-
   const userName =
     user?.name ||
     user?.nickname ||
     user?.login ||
-    localStorage.getItem(
-      "articlue_profile_name"
-    ) ||
+    user?.loginId ||
     "사용자";
 
-  const profileText =
-    userName.charAt(0);
+  const loginType =
+    localStorage.getItem(
+      "articlue_login_type"
+    ) || "local";
+
+  const profileInitial =
+    userName.charAt(0).toUpperCase();
 
   const handleLogout =
     () => {
+      const confirmed =
+        window.confirm(
+          "로그아웃 하시겠습니까?"
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
       clearAuthStorage();
 
-      navigate(
-        "/login",
-        {
-          replace: true,
-        }
-      );
+      navigate("/login");
     };
 
   return (
@@ -68,11 +72,12 @@ export default function Topbar() {
       </h2>
 
       <div className="relative">
+
         <button
           type="button"
           onClick={() =>
-            setOpen(
-              !open
+            setIsOpen(
+              !isOpen
             )
           }
           className="
@@ -82,6 +87,7 @@ export default function Topbar() {
           "
         >
           <div className="text-right">
+
             <div className="font-bold">
               {userName}
             </div>
@@ -94,6 +100,7 @@ export default function Topbar() {
             >
               {loginType}
             </div>
+
           </div>
 
           <div
@@ -110,46 +117,44 @@ export default function Topbar() {
               text-white
             "
           >
-            {profileText}
+            {profileInitial}
           </div>
+
         </button>
 
-        {open && (
+        {isOpen && (
           <div
             className="
               absolute
               right-0
               top-14
               z-50
-              w-56
-              rounded-xl
+              w-[180px]
+              overflow-hidden
+              rounded-2xl
               border
               border-slate-200
               bg-white
-              p-3
               shadow-lg
             "
           >
-            <div
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                navigate("/mypage");
+              }}
               className="
-                border-b
-                border-slate-100
-                pb-3
+                w-full
+                px-4
+                py-3
+                text-left
+                text-sm
+                hover:bg-slate-100
               "
             >
-              <div className="font-bold">
-                {userName}
-              </div>
-
-              <div
-                className="
-                  text-sm
-                  text-slate-500
-                "
-              >
-                {loginType}
-              </div>
-            </div>
+              마이페이지
+            </button>
 
             <button
               type="button"
@@ -157,17 +162,15 @@ export default function Topbar() {
                 handleLogout
               }
               className="
-                mt-3
                 w-full
-                rounded-lg
-                border
-                border-red-200
-                px-3
-                py-2
+                border-t
+                border-slate-100
+                px-4
+                py-3
+                text-left
                 text-sm
-                font-bold
+                font-semibold
                 text-red-600
-                transition
                 hover:bg-red-50
               "
             >
@@ -175,6 +178,7 @@ export default function Topbar() {
             </button>
           </div>
         )}
+
       </div>
     </header>
   );

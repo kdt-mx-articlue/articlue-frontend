@@ -15,6 +15,7 @@ export function clearAuthStorage() {
 
   sessionStorage.removeItem("githubUser");
   sessionStorage.removeItem("githubSessionId");
+  sessionStorage.removeItem("githubDeviceCode");
 }
 
 export function isLoginExpired() {
