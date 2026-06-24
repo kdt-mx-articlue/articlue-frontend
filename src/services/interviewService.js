@@ -1,141 +1,96 @@
-import interviewQuestionMock, {
-  followUpQuestions,
-} from "../mocks/interviewQuestionMock";
+import axiosInstance from "../api/axios";
 
-/*
-  면접 시작
-*/
-export async function startInterview(
-  job_posting_id,
-  question_count
-) {
-  const questions =
-    interviewQuestionMock[
-      Number(job_posting_id)
-    ] || [];
+/* ─── 매핑 테이블 ─── */
 
-  const selectedQuestions =
-    questions.slice(
-      0,
-      Number(question_count)
-    );
+const INTERVIEWER_STYLE_MAP = {
+  "친절형": "CALM",
+  "실무형": "NEUTRAL",
+  "압박형": "PRESSURE",
+};
 
-  return {
-    interview_session_id:
-      Date.now(),
+const CHAT_MODE_MAP = {
+  "CHATBOT": "TEXT",
+  "TTS": "VOICE",
+};
 
-    questions:
-      selectedQuestions,
+/* ─── resumeId 헬퍼 ─── */
 
-    first_question:
-      selectedQuestions[0],
-  };
+function getResumeId() {
+  try {
+    const raw = localStorage.getItem("articlue-resume-store");
+    const parsed = JSON.parse(raw || "{}");
+    return parsed?.state?.resumeId ?? null;
+  } catch {
+    return null;
+  }
 }
 
-/*
-  답변 제출
-*/
-export async function submitAnswer({
-  questions,
-  currentIndex,
-  lastQuestionType,
-}) {
-  const currentQuestion =
-    questions?.[currentIndex];
+/* ─── 면접 시작 ─── */
+// POST /api/interviews/sessions
 
-  /*
-    질문이 없으면 종료
-  */
-  if (!currentQuestion) {
-    return {
-      finished: true,
+export async function startInterview(setup) {
+  const {
+    job_posting_id,
+    company_name,
+    job_name,
+    interviewer_type,
+    interviewer_style,
+    question_count,
+    interview_mode,
+    chat_mode,
+    resume_id,
+  } = setup;
 
-      result_id:
-        Date.now(),
-    };
-  }
-
-  /*
-    FOLLOW_UP은
-    연속 생성 금지
-  */
-  const canFollowUp =
-    lastQuestionType !==
-    "FOLLOW_UP";
-
-  const isFollowUp =
-    canFollowUp &&
-    Math.random() > 0.6;
-
-  /*
-    꼬리질문
-  */
-  if (isFollowUp) {
-    const randomFollowUp =
-      followUpQuestions[
-        Math.floor(
-          Math.random() *
-            followUpQuestions.length
-        )
-      ];
-
-    return {
-      finished: false,
-
-      followUp: true,
-
-      next_question: {
-        question_id:
-          Date.now(),
-
-        question_order:
-          currentQuestion.question_order,
-
-        question_type:
-          "FOLLOW_UP",
-
-        content:
-          randomFollowUp,
-      },
-    };
-  }
-
-  /*
-    다음 일반 질문
-  */
-  const nextIndex =
-    currentIndex + 1;
-
-  /*
-    마지막 질문이면 종료
-  */
-  if (
-    nextIndex >=
-    questions.length
-  ) {
-    return {
-      finished: true,
-
-      result_id:
-        Date.now(),
-    };
-  }
-
-  return {
-    finished: false,
-
-    followUp: false,
-
-    next_question:
-      questions[nextIndex],
+  const payload = {
+    resumeId:              resume_id ?? getResumeId() ?? null,
+    jobPostingId:          job_posting_id ?? null,
+    targetCompany:         company_name,
+    jobPostingTitle:       job_name,
+    interviewType:         "GENERAL",
+    interviewerStyle:      interviewer_style ?? INTERVIEWER_STYLE_MAP[interviewer_type] ?? "CALM",
+    questionSetCount:      Number(question_count),
+    maxFollowUpPerQuestion: 3,
+    chatMode:              chat_mode ?? CHAT_MODE_MAP[interview_mode] ?? "TEXT",
   };
+
+  const res = await axiosInstance.post("/interviews/sessions", payload);
+  return res.data;
 }
 
-/*
-  강제 종료
-*/
-export async function forceFinishInterview() {
-  return {
-    success: true,
-  };
+/* ─── TEXT 답변 제출 ─── */
+// POST /api/interviews/sessions/:sessionId/questions/:qaId/answer
+// Content-Type: application/json
+
+export async function submitTextAnswer(sessionId, qaId, answerContent) {
+  const res = await axiosInstance.post(
+    `/interviews/sessions/${sessionId}/questions/${qaId}/answer`,
+    { answerContent }
+  );
+  return res.data;
+}
+
+/* ─── VOICE 답변 제출 ─── */
+// POST /api/interviews/sessions/:sessionId/questions/:qaId/answer
+// Content-Type: multipart/form-data
+
+export async function submitVoiceAnswer(sessionId, qaId, audioBlob) {
+  const formData = new FormData();
+  formData.append("audioFile", audioBlob, "answer.webm");
+
+  const res = await axiosInstance.post(
+    `/interviews/sessions/${sessionId}/questions/${qaId}/answer`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return res.data;
+}
+
+/* ─── 면접 종료 ─── */
+// POST /api/interviews/sessions/:sessionId/finish
+
+export async function finishInterview(sessionId) {
+  const res = await axiosInstance.post(
+    `/interviews/sessions/${sessionId}/finish`
+  );
+  return res.data;
 }

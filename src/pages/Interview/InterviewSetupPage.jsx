@@ -80,6 +80,21 @@ export default function InterviewSetupPage() {
     setCompanyOpen(false);
   }
 
+  const INTERVIEWER_STYLE_MAP = {
+    "친절형": "CALM",
+    "실무형": "NEUTRAL",
+    "압박형": "PRESSURE",
+  };
+
+  function getResumeId() {
+    try {
+      const raw = localStorage.getItem("articlue-resume-store");
+      return JSON.parse(raw || "{}")?.state?.resumeId ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   function handleStartInterview() {
     if (!selectedCompany || !selectedJobName) {
       alert("기업 및 직무를 선택해주세요.");
@@ -87,13 +102,17 @@ export default function InterviewSetupPage() {
     }
 
     const setupData = {
-      company_name: selectedCompany,
-      job_name: selectedJobName,
+      company_name:      selectedCompany,
+      job_name:          selectedJobName,
       difficulty,
-      interviewer_type: interviewerType,
-      question_count: questionCount,
-      interview_mode: interviewMode,
-      started_at: new Date().toISOString(),
+      interviewer_type:  interviewerType,
+      interviewer_style: INTERVIEWER_STYLE_MAP[interviewerType] ?? "CALM",
+      question_count:    questionCount,
+      interview_mode:    interviewMode,
+      chat_mode:         interviewMode === "TTS" ? "VOICE" : "TEXT",
+      resume_id:         getResumeId(),
+      job_posting_id:    null,
+      started_at:        new Date().toISOString(),
     };
 
     localStorage.setItem("interviewSetup", JSON.stringify(setupData));
