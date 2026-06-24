@@ -21,6 +21,8 @@ import InterviewChatPage from "../pages/Interview/InterviewChatPage";
 
 import InterviewTTSPage from "../pages/Interview/InterviewTTSPage";
 
+import InterviewTTSDemoPage from "../pages/Interview/InterviewTTSDemoPage";
+
 import InterviewResultPage from "../pages/Interview/InterviewResultPage";
 
 import InterviewHistoryPage from "../pages/Interview/InterviewHistoryPage";
@@ -187,6 +189,13 @@ const router = createBrowserRouter([
         path: "/interview/tts/:jobPostingId",
         element: (
           <InterviewTTSPage />
+        ),
+      },
+
+      {
+        path: "/interview/tts-demo",
+        element: (
+          <InterviewTTSDemoPage />
         ),
       },
 

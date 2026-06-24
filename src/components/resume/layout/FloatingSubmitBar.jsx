@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useResumeStore } from "../../../store/resumeStore";
+import LoadingOverlay from "../../common/LoadingOverlay";
 
 import {
   getResumeSectionStatus,
@@ -79,6 +80,8 @@ export default function FloatingSubmitBar() {
     };
 
   return (
+    <>
+    {submitting && <LoadingOverlay />}
     <div
       className="floating-submit-bar"
       style={{
@@ -145,5 +148,6 @@ export default function FloatingSubmitBar() {
         {submitting ? "제출 중..." : "최종 제출"}
       </button>
     </div>
+    </>
   );
 }

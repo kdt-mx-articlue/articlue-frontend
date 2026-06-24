@@ -7,6 +7,8 @@ import {
   finishInterview,
 } from "../../services/interviewService";
 
+import LoadingOverlay from "../../components/common/LoadingOverlay";
+
 /* ─── 타이핑 스트리밍 ─── */
 function streamText(text, callback, onEnd) {
   let i = 0;
@@ -183,6 +185,7 @@ export default function InterviewChatPage() {
   /* ─── Render ─── */
   return (
     <>
+      {finishing && <LoadingOverlay />}
       <div className="mx-auto max-w-[1000px] space-y-6 pb-10">
 
         {/* ── 헤더 ── */}
