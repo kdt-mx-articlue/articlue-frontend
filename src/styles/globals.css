@@ -29,6 +29,138 @@
     0 8px 24px rgba(15,23,42,.06);
 }
 
+/* ─── 다크모드 변수 오버라이드 ─── */
+html.dark {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-soft: #334155;
+  --border: #2d3f55;
+  --text-main: #f1f5f9;
+  --text-sub: #94a3b8;
+  --text-muted: #64748b;
+  --shadow-card: 0 8px 24px rgba(0,0,0,.4);
+
+  --blue-50: #172554;
+  --blue-100: #1e3a8a;
+  --green-50: #052e16;
+  --red-50: #3b0a0a;
+}
+
+html.dark body {
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+/* ── 구조 레이아웃 ── */
+html.dark .section,
+html.dark .repeat-card,
+html.dark .github-box,
+html.dark .github-repo-card,
+html.dark .github-profile-card,
+html.dark .education-card,
+html.dark .complete-card,
+html.dark .github-modal-card {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+/* ── Tailwind bg-white 전역 오버라이드 ── */
+html.dark [class*="bg-white"] {
+  background-color: var(--surface) !important;
+}
+
+/* ── Tailwind bg-slate-* 오버라이드 ── */
+html.dark [class*="bg-slate-50"],
+html.dark [class*="bg-slate-100"] {
+  background-color: var(--surface-soft) !important;
+}
+
+/* ── Tailwind border-slate-* 오버라이드 ── */
+html.dark [class*="border-slate-100"],
+html.dark [class*="border-slate-200"] {
+  border-color: var(--border) !important;
+}
+
+/* ── Tailwind text-slate-* 오버라이드 ── */
+html.dark [class*="text-slate-900"],
+html.dark [class*="text-slate-800"] {
+  color: var(--text-main) !important;
+}
+html.dark [class*="text-slate-700"],
+html.dark [class*="text-slate-600"] {
+  color: var(--text-sub) !important;
+}
+html.dark [class*="text-slate-500"],
+html.dark [class*="text-slate-400"] {
+  color: var(--text-muted) !important;
+}
+
+/* ── hover 색상 ── */
+html.dark [class*="hover:bg-slate-50"]:hover,
+html.dark [class*="hover:bg-slate-100"]:hover {
+  background-color: var(--surface-soft) !important;
+}
+
+/* ── 폼 요소 ── */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+html.dark select {
+  background: var(--surface-soft) !important;
+  border-color: var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+/* ── 카드 내부 텍스트 ── */
+html.dark .section strong,
+html.dark .repeat-card strong,
+html.dark .section h2,
+html.dark .section h3,
+html.dark .section p {
+  color: inherit;
+}
+
+/* ── 칩(탭 버튼) ── */
+html.dark .chip {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+html.dark .chip.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+/* ── 모달 오버레이 내부 흰 박스들 ── */
+html.dark .fixed [class*="bg-white"],
+html.dark .fixed [class*="rounded-"][class*="bg-white"] {
+  background: var(--surface) !important;
+  color: var(--text-main) !important;
+}
+
+/* ── 프로그레스 트랙 ── */
+html.dark .progress-track,
+html.dark [class*="bg-slate-100"][class*="rounded-full"] {
+  background: var(--surface-soft) !important;
+}
+
+/* ── 드롭다운 / 섹션 소프트 배경 ── */
+html.dark [class*="bg-blue-50"] {
+  background-color: var(--blue-50) !important;
+}
+
+/* ── floating bar ── */
+html.dark .floating-bar {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: var(--border);
+}
+
+/* ── 페이지히어로 카드 ── */
+html.dark [class*="rounded-"][class*="bg-white"] {
+  background: var(--surface) !important;
+}
+
 /* 이 부분 복구 */
 .resume-container{
   width:100%;

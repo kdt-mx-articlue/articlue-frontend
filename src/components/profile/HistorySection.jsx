@@ -1,24 +1,14 @@
-import {
-  useState,
-} from "react";
+import { useState } from "react";
+import interviewReportMock from "../../mocks/interviewReportMock";
+import Carousel from "../common/Carousel";
 
-export default function HistorySection({
-  histories,
-}) {
-  const [
-    tab,
-    setTab,
-  ] = useState(
-    "coverLetter"
-  );
+export default function HistorySection({ histories }) {
+  const [tab, setTab] = useState("coverLetter");
 
-  const coverLetters =
-    histories?.coverLetters ||
-    [];
+  const coverLetters = histories?.coverLetters || [];
 
-  const interviews =
-    histories?.interviews ||
-    [];
+  // profile API 미연결이므로 더미 데이터 직접 사용
+  const interviews = interviewReportMock;
 
   return (
     <section className="section">
@@ -104,37 +94,32 @@ export default function HistorySection({
             없습니다.
           </div>
         )
-      ) : interviews.length >
-        0 ? (
-        interviews.map(
-          (item) => (
-            <div
-              key={
-                item.interviewId
-              }
-              className="repeat-card"
-            >
-              <strong>
-                {
-                  item.companyName
-                }
-              </strong>
-
-              <div>
-                점수 :
-                {" "}
-                {
-                  item.score
-                }
+      ) : interviews.length > 0 ? (
+        <Carousel
+          items={interviews}
+          renderItem={(item) => (
+            <div className="repeat-card" style={{ marginBottom: 0 }}>
+              <strong style={{ fontSize: "18px" }}>{item.company_name}</strong>
+              <div style={{ marginTop: "4px", fontSize: "13px", color: "#64748b" }}>
+                {item.job_name}
+              </div>
+              <div style={{ marginTop: "8px", fontSize: "13px", color: "#64748b" }}>
+                종합 점수:{" "}
+                <strong style={{ color: "#2563eb", fontSize: "20px" }}>
+                  {item.scores.overall_score.toFixed(2)}점
+                </strong>
+              </div>
+              <div style={{ marginTop: "4px", fontSize: "12px", color: "#94a3b8" }}>
+                📅 {item.interview_summary?.interview_date?.replace("T", " ").slice(0, 16)}
+              </div>
+              <div style={{ marginTop: "4px", fontSize: "12px", color: "#94a3b8" }}>
+                난이도 {item.interview_summary?.difficulty} · {item.interview_summary?.interviewer_type}
               </div>
             </div>
-          )
-        )
+          )}
+        />
       ) : (
-        <div className="repeat-card">
-          면접 기록이
-          없습니다.
-        </div>
+        <div className="repeat-card">면접 기록이 없습니다.</div>
       )}
     </section>
   );

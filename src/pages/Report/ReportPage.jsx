@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import {
+  HiBriefcase,
+  HiLightBulb,
+  HiCode,
+  HiClipboardCheck,
+  HiUserGroup,
+  HiExclamationCircle,
+  HiBookOpen,
+} from "react-icons/hi";
 
 import ReportRadarChart from "../../components/report/ReportRadarChart";
-
 import { getReportData } from "../../services/reportService";
 
 export default function ReportPage() {
@@ -41,20 +48,11 @@ export default function ReportPage() {
   } = report;
 
   const metricLabels = {
-    business_fit:
-      "비즈니스 핏",
-
-    action_result_fit:
-      "문제 해결",
-
-    tech_stack_fit:
-      "기술 스택",
-
-    requirement_fit:
-      "요구사항",
-
-    culture_fit:
-      "문화 적합도",
+    business_fit:      { label: "비즈니스 핏", icon: <HiBriefcase />   },
+    action_result_fit: { label: "문제 해결",   icon: <HiLightBulb />   },
+    tech_stack_fit:    { label: "기술 스택",   icon: <HiCode />         },
+    requirement_fit:   { label: "요구사항",    icon: <HiClipboardCheck /> },
+    culture_fit:       { label: "문화 적합도", icon: <HiUserGroup />   },
   };
 
   function handleInterviewReport() {
@@ -242,60 +240,20 @@ export default function ReportPage() {
             1차 분석 리포트
           </h2>
 
-          {Object.entries(
-            resumeAnalysis.metrics
-          ).map(
-            ([key, value]) => (
-              <div
-                key={key}
-                className="
-                  mb-8
-                  border-b
-                  pb-6
-                "
-              >
-                <div
-                  className="
-                    text-lg
-                    font-black
-                  "
-                >
-                  {
-                    metricLabels[
-                      key
-                    ]
-                  }
-                </div>
-
-                <div
-                  className="
-                    mt-2
-                    text-3xl
-                    font-black
-                    text-blue-600
-                  "
-                >
-                  {Number(
-                    value.score
-                  ).toFixed(2)}
-                  %
-                </div>
-
-                <p
-                  className="
-                    mt-3
-                    text-base
-                    leading-7
-                    text-slate-600
-                  "
-                >
-                  {
-                    value.reason_text
-                  }
-                </p>
+          {Object.entries(resumeAnalysis.metrics).map(([key, value]) => (
+            <div key={key} className="mb-8 border-b pb-6">
+              <div className="flex items-center gap-2 text-lg font-black">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-[18px]">
+                  {metricLabels[key]?.icon}
+                </span>
+                {metricLabels[key]?.label}
               </div>
-            )
-          )}
+              <div className="mt-2 text-3xl font-black text-blue-600">
+                {Number(value.score).toFixed(2)}%
+              </div>
+              <p className="mt-3 text-base leading-7 text-slate-600">{value.reason_text}</p>
+            </div>
+          ))}
         </div>
 
         <div
@@ -316,60 +274,20 @@ export default function ReportPage() {
           </h2>
 
           {finalAnalysis ? (
-            Object.entries(
-              finalAnalysis.metrics
-            ).map(
-              ([key, value]) => (
-                <div
-                  key={key}
-                  className="
-                    mb-8
-                    border-b
-                    pb-6
-                  "
-                >
-                  <div
-                    className="
-                      text-lg
-                      font-black
-                    "
-                  >
-                    {
-                      metricLabels[
-                        key
-                      ]
-                    }
-                  </div>
-
-                  <div
-                    className="
-                      mt-2
-                      text-3xl
-                      font-black
-                      text-blue-600
-                    "
-                  >
-                    {Number(
-                      value.score
-                    ).toFixed(2)}
-                    %
-                  </div>
-
-                  <p
-                    className="
-                      mt-3
-                      text-base
-                      leading-7
-                      text-slate-600
-                    "
-                  >
-                    {
-                      value.reason_text
-                    }
-                  </p>
+            Object.entries(finalAnalysis.metrics).map(([key, value]) => (
+              <div key={key} className="mb-8 border-b pb-6">
+                <div className="flex items-center gap-2 text-lg font-black">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-[18px]">
+                    {metricLabels[key]?.icon}
+                  </span>
+                  {metricLabels[key]?.label}
                 </div>
-              )
-            )
+                <div className="mt-2 text-3xl font-black text-blue-600">
+                  {Number(value.score).toFixed(2)}%
+                </div>
+                <p className="mt-3 text-base leading-7 text-slate-600">{value.reason_text}</p>
+              </div>
+            ))
           ) : (
             <div
               className="
@@ -416,34 +334,29 @@ export default function ReportPage() {
             1차 취약점
           </h2>
 
-          {resumeActionPlan?.weaknesses?.map(
-            (item) => (
-              <div
-                key={item.title}
-                className="
-                  mb-4
-                  rounded-xl
-                  border
-                  p-5
-                "
-              >
-                <div className="font-black">
-                  {item.title}
-                </div>
-
-                <div
-                  className="
-                    mt-2
-                    text-base
-                    leading-7
-                    text-slate-600
-                  "
-                >
-                  {item.description}
-                </div>
+          {resumeActionPlan?.weaknesses?.map((item) => (
+            <div
+              key={item.title}
+              className="mb-4 rounded-xl border-l-4 p-5"
+              style={{
+                borderLeftColor: "#fca5a5",
+                borderTop: "1px solid #fee2e2",
+                borderRight: "1px solid #fee2e2",
+                borderBottom: "1px solid #fee2e2",
+                background: "#fff5f5",
+              }}
+            >
+              <div className="flex items-center gap-2 font-black">
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-400 text-[18px]">
+                  <HiExclamationCircle />
+                </span>
+                {item.title}
               </div>
-            )
-          )}
+              <p className="mt-2 text-base leading-7 text-slate-600 pl-10">
+                {item.description}
+              </p>
+            </div>
+          ))}
         </div>
 
         <div
@@ -464,47 +377,32 @@ export default function ReportPage() {
           </h2>
 
           {finalAnalysis ? (
-            finalActionPlan?.weaknesses?.map(
-              (item) => (
-                <div
-                  key={item.title}
-                  className="
-                    mb-4
-                    rounded-xl
-                    border
-                    p-5
-                  "
-                >
-                  <div className="font-black">
-                    {item.title}
-                  </div>
-
-                  <div
-                    className="
-                      mt-2
-                      text-base
-                      leading-7
-                      text-slate-600
-                    "
-                  >
-                    {item.description}
-                  </div>
+            finalActionPlan?.weaknesses?.map((item) => (
+              <div
+                key={item.title}
+                className="mb-4 rounded-xl border-l-4 p-5"
+                style={{
+                  borderLeftColor: "#fca5a5",
+                  borderTop: "1px solid #fee2e2",
+                  borderRight: "1px solid #fee2e2",
+                  borderBottom: "1px solid #fee2e2",
+                  background: "#fff5f5",
+                }}
+              >
+                <div className="flex items-center gap-2 font-black">
+                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-400 text-[18px]">
+                    <HiExclamationCircle />
+                  </span>
+                  {item.title}
                 </div>
-              )
-            )
+                <p className="mt-2 text-base leading-7 text-slate-600 pl-10">
+                  {item.description}
+                </p>
+              </div>
+            ))
           ) : (
-            <div
-              className="
-                flex
-                h-[220px]
-                items-center
-                justify-center
-                text-center
-                text-slate-500
-              "
-            >
-              모의 면접 완료 후
-              생성됩니다.
+            <div className="flex h-[220px] items-center justify-center text-center text-slate-500">
+              모의 면접 완료 후 생성됩니다.
             </div>
           )}
         </div>
@@ -536,36 +434,29 @@ export default function ReportPage() {
             1차 추천 액션 플랜
           </h2>
 
-          {resumeActionPlan?.recommendations?.map(
-            (item) => (
-              <div
-                key={item.title}
-                className="
-                  mb-4
-                  rounded-xl
-                  border
-                  border-blue-100
-                  bg-blue-50
-                  p-5
-                "
-              >
-                <div className="font-black">
-                  {item.title}
-                </div>
-
-                <div
-                  className="
-                    mt-2
-                    text-base
-                    leading-7
-                    text-slate-700
-                  "
-                >
-                  {item.description}
-                </div>
+          {resumeActionPlan?.recommendations?.map((item) => (
+            <div
+              key={item.title}
+              className="mb-4 rounded-xl border-l-4 p-5"
+              style={{
+                borderLeftColor: "#93c5fd",
+                borderTop: "1px solid #dbeafe",
+                borderRight: "1px solid #dbeafe",
+                borderBottom: "1px solid #dbeafe",
+                background: "#eff6ff",
+              }}
+            >
+              <div className="flex items-center gap-2 font-black">
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-500 text-[18px]">
+                  <HiBookOpen />
+                </span>
+                {item.title}
               </div>
-            )
-          )}
+              <p className="mt-2 text-base leading-7 text-slate-700 pl-10">
+                {item.description}
+              </p>
+            </div>
+          ))}
         </div>
 
         <div
@@ -586,49 +477,32 @@ export default function ReportPage() {
           </h2>
 
           {finalAnalysis ? (
-            finalActionPlan?.recommendations?.map(
-              (item) => (
-                <div
-                  key={item.title}
-                  className="
-                    mb-4
-                    rounded-xl
-                    border
-                    border-blue-100
-                    bg-blue-50
-                    p-5
-                  "
-                >
-                  <div className="font-black">
-                    {item.title}
-                  </div>
-
-                  <div
-                    className="
-                      mt-2
-                      text-base
-                      leading-7
-                      text-slate-700
-                    "
-                  >
-                    {item.description}
-                  </div>
+            finalActionPlan?.recommendations?.map((item) => (
+              <div
+                key={item.title}
+                className="mb-4 rounded-xl border-l-4 p-5"
+                style={{
+                  borderLeftColor: "#93c5fd",
+                  borderTop: "1px solid #dbeafe",
+                  borderRight: "1px solid #dbeafe",
+                  borderBottom: "1px solid #dbeafe",
+                  background: "#eff6ff",
+                }}
+              >
+                <div className="flex items-center gap-2 font-black">
+                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-500 text-[18px]">
+                    <HiBookOpen />
+                  </span>
+                  {item.title}
                 </div>
-              )
-            )
+                <p className="mt-2 text-base leading-7 text-slate-700 pl-10">
+                  {item.description}
+                </p>
+              </div>
+            ))
           ) : (
-            <div
-              className="
-                flex
-                h-[220px]
-                items-center
-                justify-center
-                text-center
-                text-slate-500
-              "
-            >
-              모의 면접 완료 후
-              생성됩니다.
+            <div className="flex h-[220px] items-center justify-center text-center text-slate-500">
+              모의 면접 완료 후 생성됩니다.
             </div>
           )}
         </div>

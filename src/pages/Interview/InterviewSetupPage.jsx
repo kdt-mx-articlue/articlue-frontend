@@ -1,177 +1,107 @@
-import { useEffect, useState } from "react";
-
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import PageHero from "../../components/common/PageHero";
-
-import resumeAnalysisMock from "../../mocks/resumeAnalysisMock";
+import { loadJobPostings } from "../../utils/jobPostingsLoader";
 
 export default function InterviewSetupPage() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const { jobPostingId } =
-    useParams();
+  // CSV 전체 데이터
+  const [allData, setAllData] = useState([]);
 
-  const [selectedCompany, setSelectedCompany] =
-    useState("");
+  // 기업 검색 인풋
+  const [companyQuery, setCompanyQuery] = useState("");
+  const [companyOpen, setCompanyOpen] = useState(false);
+  const companyRef = useRef(null);
 
-  const [selectedJobPostingId, setSelectedJobPostingId] =
-    useState("");
+  // 선택된 값
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedJobName, setSelectedJobName] = useState("");
 
-  const [selectedJobName, setSelectedJobName] =
-    useState("");
+  // 면접 설정
+  const [difficulty, setDifficulty] = useState("중");
+  const [interviewerType, setInterviewerType] = useState("실무형");
+  const [questionCount, setQuestionCount] = useState(10);
+  const [interviewMode, setInterviewMode] = useState("CHATBOT");
 
-  const [difficulty, setDifficulty] =
-    useState("중");
-
-  const [interviewerType, setInterviewerType] =
-    useState("실무형");
-
-  const [questionCount, setQuestionCount] =
-    useState(10);
-
-  const [interviewMode, setInterviewMode] =
-    useState("CHATBOT");
-
-  const companies = [
-    ...new Set(
-      resumeAnalysisMock.map(
-        (item) =>
-          item.company_name
-      )
-    ),
-  ];
-
-  const selectedCompanyJobs =
-    resumeAnalysisMock.filter(
-      (item) =>
-        item.company_name ===
-        selectedCompany
-    );
-
+  // CSV 로드
   useEffect(() => {
-    if (!jobPostingId) {
-      return;
+    loadJobPostings().then(setAllData).catch(console.error);
+  }, []);
+
+  // 쿼리 파라미터로 자동 선택 (?company=XXX&job=YYY)
+  useEffect(() => {
+    const company = searchParams.get("company");
+    const job = searchParams.get("job");
+    if (company) { setSelectedCompany(company); setCompanyQuery(company); }
+    if (job) setSelectedJobName(job);
+  }, [searchParams]);
+
+  // 기업 검색 결과 (useMemo)
+  const companyResults = useMemo(() => {
+    if (!companyQuery.trim()) return [];
+    const lower = companyQuery.toLowerCase();
+    const names = [
+      ...new Set(
+        allData
+          .filter((d) => d.company_name?.toLowerCase().includes(lower))
+          .map((d) => d.company_name)
+      ),
+    ];
+    return names.slice(0, 15);
+  }, [companyQuery, allData]);
+
+  // 선택된 기업의 직무 목록
+  const jobOptions = useMemo(() => {
+    if (!selectedCompany) return [];
+    return allData
+      .filter((d) => d.company_name === selectedCompany)
+      .map((d) => d.job_title)
+      .filter(Boolean);
+  }, [selectedCompany, allData]);
+
+  // 바깥 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (companyRef.current && !companyRef.current.contains(e.target)) {
+        setCompanyOpen(false);
+      }
     }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
 
-    const target =
-      resumeAnalysisMock.find(
-        (item) =>
-          item.job_posting_id ===
-          Number(jobPostingId)
-      );
-
-    if (!target) {
-      return;
-    }
-
-    setSelectedCompany(
-      target.company_name
-    );
-
-    setSelectedJobPostingId(
-      target.job_posting_id
-    );
-
-    setSelectedJobName(
-      target.job_name
-    );
-  }, [jobPostingId]);
-
-  function handleCompanyChange(
-    companyName
-  ) {
-    setSelectedCompany(
-      companyName
-    );
-
-    setSelectedJobPostingId("");
-
+  function handleSelectCompany(name) {
+    setSelectedCompany(name);
+    setCompanyQuery(name);
     setSelectedJobName("");
-  }
-
-  function handleJobChange(
-    postingId
-  ) {
-    const target =
-      resumeAnalysisMock.find(
-        (item) =>
-          item.job_posting_id ===
-          Number(postingId)
-      );
-
-    if (!target) {
-      return;
-    }
-
-    setSelectedJobPostingId(
-      target.job_posting_id
-    );
-
-    setSelectedJobName(
-      target.job_name
-    );
+    setCompanyOpen(false);
   }
 
   function handleStartInterview() {
-    if (
-      !selectedCompany ||
-      !selectedJobPostingId
-    ) {
-      alert(
-        "기업 및 직무를 선택해주세요."
-      );
-
+    if (!selectedCompany || !selectedJobName) {
+      alert("기업 및 직무를 선택해주세요.");
       return;
     }
 
     const setupData = {
-      company_name:
-        selectedCompany,
-
-      job_posting_id:
-        Number(
-          selectedJobPostingId
-        ),
-
-      job_name:
-        selectedJobName,
-
+      company_name: selectedCompany,
+      job_name: selectedJobName,
       difficulty,
-
-      interviewer_type:
-        interviewerType,
-
-      question_count:
-        questionCount,
-
-      interview_mode:
-        interviewMode,
-
-      started_at:
-        new Date().toISOString(),
+      interviewer_type: interviewerType,
+      question_count: questionCount,
+      interview_mode: interviewMode,
+      started_at: new Date().toISOString(),
     };
 
-    localStorage.setItem(
-      "interviewSetup",
-      JSON.stringify(setupData)
-    );
+    localStorage.setItem("interviewSetup", JSON.stringify(setupData));
 
-    if (
-      interviewMode ===
-      "CHATBOT"
-    ) {
-      navigate(
-        "/interview/chat"
-      );
+    if (interviewMode === "CHATBOT") {
+      navigate("/interview/chat");
     } else {
-      navigate(
-        "/interview/tts"
-      );
+      navigate("/interview/tts");
     }
   }
 
@@ -217,107 +147,52 @@ export default function InterviewSetupPage() {
             lg:grid-cols-2
           "
         >
-          {/* 기업 */}
-
-          <div>
-            <label
-              className="
-                mb-2
-                block
-                font-black
-              "
-            >
-              기업
-            </label>
-
-            <select
-              value={
-                selectedCompany
-              }
-              disabled={
-                !!jobPostingId
-              }
-              onChange={(e) =>
-                handleCompanyChange(
-                  e.target.value
-                )
-              }
-              className="
-                w-full
-                rounded-xl
-                border
-                p-4
-              "
-            >
-              <option value="">
-                기업 선택
-              </option>
-
-              {companies.map(
-                (company) => (
-                  <option
-                    key={company}
-                    value={
-                      company
-                    }
+          {/* 기업 검색 */}
+          <div ref={companyRef} className="relative">
+            <label className="mb-2 block font-black">기업</label>
+            <input
+              type="text"
+              value={companyQuery}
+              onChange={(e) => {
+                setCompanyQuery(e.target.value);
+                setSelectedCompany("");
+                setSelectedJobName("");
+                setCompanyOpen(true);
+              }}
+              onFocus={() => setCompanyOpen(true)}
+              placeholder="기업명을 검색하세요"
+              className="w-full rounded-xl border p-4 outline-none focus:border-blue-500"
+            />
+            {companyOpen && companyResults.length > 0 && (
+              <ul className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[220px] overflow-y-auto rounded-xl border border-slate-100 bg-white shadow-xl">
+                {companyResults.map((name) => (
+                  <li
+                    key={name}
+                    onClick={() => handleSelectCompany(name)}
+                    className="cursor-pointer px-4 py-3 text-[14px] hover:bg-blue-50 transition-colors"
                   >
-                    {company}
-                  </option>
-                )
-              )}
-            </select>
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* 직무 */}
-
           <div>
-            <label
-              className="
-                mb-2
-                block
-                font-black
-              "
-            >
-              직무
-            </label>
-
+            <label className="mb-2 block font-black">직무</label>
             <select
-              value={
-                selectedJobPostingId
-              }
-              disabled={
-                !!jobPostingId
-              }
-              onChange={(e) =>
-                handleJobChange(
-                  e.target.value
-                )
-              }
-              className="
-                w-full
-                rounded-xl
-                border
-                p-4
-              "
+              value={selectedJobName}
+              disabled={!selectedCompany}
+              onChange={(e) => setSelectedJobName(e.target.value)}
+              className="w-full rounded-xl border p-4 disabled:bg-slate-50 disabled:text-slate-400"
             >
               <option value="">
-                직무 선택
+                {selectedCompany ? "직무 선택" : "기업을 먼저 선택하세요"}
               </option>
-
-              {selectedCompanyJobs.map(
-                (job) => (
-                  <option
-                    key={
-                      job.job_posting_id
-                    }
-                    value={
-                      job.job_posting_id
-                    }
-                  >
-                    {job.job_name}
-                  </option>
-                )
-              )}
+              {jobOptions.map((job) => (
+                <option key={job} value={job}>{job}</option>
+              ))}
             </select>
           </div>
 

@@ -4,6 +4,10 @@ const resumeAnalysisMock = [
     job_posting_id: 101,
     company_name: "토스",
     job_name: "Backend Engineer",
+    career_level: "경력 3년 이상",
+    tech_stacks: "Java, Spring Boot, MySQL, Redis, Kafka, Docker",
+    apply_url: "https://toss.im/career",
+    deadline: "상시채용",
 
     analysis_stage: "RESUME",
 
@@ -47,6 +51,10 @@ const resumeAnalysisMock = [
     job_posting_id: 102,
     company_name: "네이버",
     job_name: "Backend Engineer",
+    career_level: "경력 5년 이상",
+    tech_stacks: "Spring Boot, Redis, Kubernetes, gRPC, Elasticsearch",
+    apply_url: "https://recruit.navercorp.com",
+    deadline: "2026.07.31",
 
     analysis_stage: "RESUME",
 
@@ -90,6 +98,10 @@ const resumeAnalysisMock = [
     job_posting_id: 103,
     company_name: "카카오",
     job_name: "Platform Engineer",
+    career_level: "경력 3년 이상",
+    tech_stacks: "Kafka, Redis, Go, Kubernetes, AWS",
+    apply_url: "https://careers.kakao.com",
+    deadline: "2026.08.15",
 
     analysis_stage: "RESUME",
 
@@ -133,6 +145,10 @@ const resumeAnalysisMock = [
     job_posting_id: 104,
     company_name: "당근",
     job_name: "Backend Engineer",
+    career_level: "경력 2년 이상",
+    tech_stacks: "Spring, JPA, MySQL, RabbitMQ, Docker",
+    apply_url: "https://about.daangn.com/jobs",
+    deadline: "상시채용",
 
     analysis_stage: "RESUME",
 
@@ -176,6 +192,10 @@ const resumeAnalysisMock = [
     job_posting_id: 105,
     company_name: "중고나라",
     job_name: "Backend Engineer",
+    career_level: "신입/경력",
+    tech_stacks: "Spring, MySQL, AWS EC2, Jenkins",
+    apply_url: "https://www.joongna.com",
+    deadline: "2026.09.30",
 
     analysis_stage: "RESUME",
 

@@ -1,3 +1,10 @@
+import CompanyCard from "./CompanyCard";
+
+export default function RecommendationCard({ company, onToggleFavorite }) {
+  return <CompanyCard company={company} onToggleFavorite={onToggleFavorite} />;
+}
+
+/*
 import {
   HiBookmark,
   HiOutlineBookmark,
@@ -183,3 +190,4 @@ export default function RecommendationCard({
     </article>
   );
 }
+*/

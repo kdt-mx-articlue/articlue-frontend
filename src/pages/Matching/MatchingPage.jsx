@@ -6,7 +6,19 @@ import RecommendationCard from "../../components/dashboard/RecommendationCard";
 
 import FavoriteSearchSection from "../../components/dashboard/FavoriteSearchSection";
 
+import FavoriteCompanyCard from "../../components/dashboard/FavoriteCompanyCard";
+
 import { loadDashboard } from "../../services/dashboardService";
+
+const STORAGE_KEY = "favoriteCompaniesCsv";
+
+function loadManualFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
 
 export default function MatchingPage() {
   const [loading, setLoading] =
@@ -14,6 +26,9 @@ export default function MatchingPage() {
 
   const [companies, setCompanies] =
     useState([]);
+
+  const [manualFavorites, setManualFavorites] =
+    useState(loadManualFavorites);
 
   async function fetchData() {
     try {
@@ -88,6 +103,31 @@ export default function MatchingPage() {
       return updated;
     });
   }
+
+  function handleAddManualFavorite(item) {
+    const key = `${item.company_name}__${item.job_title}`;
+    setManualFavorites((prev) => {
+      if (prev.some((f) => `${f.company_name}__${f.job_title}` === key)) return prev;
+      const updated = [...prev, item];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function handleRemoveManualFavorite(item) {
+    const key = `${item.company_name}__${item.job_title}`;
+    setManualFavorites((prev) => {
+      const updated = prev.filter(
+        (f) => `${f.company_name}__${f.job_title}` !== key
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  const manualFavoriteKeys = manualFavorites.map(
+    (f) => `${f.company_name}__${f.job_title}`
+  );
 
   if (loading) {
     return (
@@ -252,7 +292,10 @@ export default function MatchingPage() {
 
       {/* 기업 검색 */}
 
-      <FavoriteSearchSection />
+      <FavoriteSearchSection
+        onFavorite={handleAddManualFavorite}
+        favoriteKeys={manualFavoriteKeys}
+      />
 
       {/* 관심 기업 */}
 
@@ -268,37 +311,7 @@ export default function MatchingPage() {
           관심 기업
         </h2>
 
-        {favoriteCompanies.length >
-        0 ? (
-          <div
-            className="
-              flex
-              gap-6
-              overflow-x-auto
-              pb-2
-            "
-          >
-            {favoriteCompanies.map(
-              (company) => (
-                <div
-                  key={
-                    company.job_posting_id
-                  }
-                  className="
-                    min-w-[340px]
-                  "
-                >
-                  <RecommendationCard
-                    company={company}
-                    onToggleFavorite={
-                      handleToggleFavorite
-                    }
-                  />
-                </div>
-              )
-            )}
-          </div>
-        ) : (
+        {favoriteCompanies.length === 0 && manualFavorites.length === 0 ? (
           <div
             className="
               rounded-[28px]
@@ -312,6 +325,23 @@ export default function MatchingPage() {
             "
           >
             관심 기업이 없습니다.
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {favoriteCompanies.map((company) => (
+              <RecommendationCard
+                key={company.job_posting_id}
+                company={company}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            ))}
+            {manualFavorites.map((company) => (
+              <FavoriteCompanyCard
+                key={`${company.company_name}__${company.job_title}`}
+                company={company}
+                onRemove={handleRemoveManualFavorite}
+              />
+            ))}
           </div>
         )}
 

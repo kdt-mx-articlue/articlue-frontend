@@ -14,7 +14,8 @@ body,
 }
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--bg, #f8fafc);
+  color: var(--text-main, #0f172a);
   font-family: Pretendard, sans-serif;
+  transition: background 0.3s, color 0.3s;
 }

@@ -73,6 +73,7 @@ export default function ProfilePage() {
         statTitle="활동 점수"
         statValue="87점"
         statDescription="서비스 활동 내역 기반 성장 지표"
+        progressValue={87}
       />
 
       <UserInfoCard

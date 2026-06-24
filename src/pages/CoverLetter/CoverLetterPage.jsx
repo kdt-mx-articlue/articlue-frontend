@@ -61,6 +61,7 @@ export default function CoverLetterPage() {
         statTitle="생성 개수"
         statValue={`${coverLetters.length}건`}
         statDescription="누적 생성 자기소개서"
+        progressValue={Math.min(coverLetters.length * 20, 100)}
       />
 
       <section

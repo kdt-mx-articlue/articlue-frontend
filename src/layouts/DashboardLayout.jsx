@@ -5,7 +5,7 @@ import Topbar from "../components/layout/Topbar";
 
 export default function DashboardLayout() {
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen" style={{ background: "var(--bg)", color: "var(--text-main)", transition: "background 0.3s, color 0.3s" }}>
 
       <Sidebar />
 
