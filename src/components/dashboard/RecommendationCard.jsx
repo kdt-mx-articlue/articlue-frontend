@@ -1,7 +1,7 @@
 import CompanyCard from "./CompanyCard";
 
-export default function RecommendationCard({ company, onToggleFavorite }) {
-  return <CompanyCard company={company} onToggleFavorite={onToggleFavorite} />;
+export default function RecommendationCard({ company, onFavoriteChange, onGenerateCoverLetter }) {
+  return <CompanyCard company={company} onFavoriteChange={onFavoriteChange} onGenerateCoverLetter={onGenerateCoverLetter} />;
 }
 
 /*

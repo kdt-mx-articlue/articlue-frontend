@@ -1,15 +1,31 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loadResume } from "../../services/resumeApi";
+import { useResumeStore } from "../../store/resumeStore";
 
-export default function ResumeSection({
-  resume,
-}) {
-  const navigate =
-    useNavigate();
+export default function ResumeSection({ resume }) {
+  const navigate = useNavigate();
+  const setResume = useResumeStore((s) => s.setResume);
+  const [loading, setLoading] = useState(false);
 
-  const handleEditResume =
-    () => {
+  const handleEditResume = async () => {
+    const resumeId = resume?.resumeId;
+    if (!resumeId) {
       navigate("/resume");
-    };
+      return;
+    }
+    try {
+      setLoading(true);
+      const storeData = await loadResume(resumeId);
+      setResume(storeData);
+      navigate("/resume");
+    } catch (e) {
+      console.error("이력서 로드 실패:", e);
+      navigate("/resume");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section className="section">
@@ -111,11 +127,10 @@ export default function ResumeSection({
         <button
           type="button"
           className="btn-primary"
-          onClick={
-            handleEditResume
-          }
+          onClick={handleEditResume}
+          disabled={loading}
         >
-          이력서 수정
+          {loading ? "불러오는 중..." : "이력서 수정"}
         </button>
       </div>
     </section>

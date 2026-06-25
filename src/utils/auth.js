@@ -12,6 +12,9 @@ export function clearAuthStorage() {
   localStorage.removeItem("naver_oauth_state");
   localStorage.removeItem("github_oauth_state");
   localStorage.removeItem("articlue-resume-store");
+  localStorage.removeItem("articlue-favorites");
+  localStorage.removeItem("interviewSetup");
+  localStorage.removeItem("lastInterviewSessionId");
 
   sessionStorage.removeItem("githubUser");
   sessionStorage.removeItem("githubSessionId");

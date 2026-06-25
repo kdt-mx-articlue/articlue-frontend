@@ -32,6 +32,11 @@ export default function FloatingSubmitBar() {
       (state) => state.resetResume
     );
 
+  const setResumeId =
+    useResumeStore(
+      (state) => state.setResumeId
+    );
+
   const progress =
     useMemo(() => {
       const sectionStatus =
@@ -59,12 +64,17 @@ export default function FloatingSubmitBar() {
       try {
         setSubmitting(true);
 
-        await submitResume(resume);
+        const res = await submitResume(resume);
 
         alert("이력서가 제출되었습니다.");
 
+        // 폼 초기화 후, resumeId만 다시 저장 (추천기업 조회에 필요)
         resetResume();
-        localStorage.removeItem("articlue-resume-store");
+        const resumeId = res?.data?.resumeId;
+        if (resumeId) {
+          setResumeId(resumeId);
+        }
+
         navigate("/");
 
       } catch (error) {

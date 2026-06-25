@@ -1,350 +1,172 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import PageHero from "../../components/common/PageHero";
-
 import RecommendationCard from "../../components/dashboard/RecommendationCard";
-
 import FavoriteSearchSection from "../../components/dashboard/FavoriteSearchSection";
+import CompanyCard from "../../components/dashboard/CompanyCard";
 
-import FavoriteCompanyCard from "../../components/dashboard/FavoriteCompanyCard";
-
-import { loadDashboard } from "../../services/dashboardService";
-
-const STORAGE_KEY = "favoriteCompaniesCsv";
-
-function loadManualFavorites() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
+import { loadDashboard, getJobMatchRate, getStoredResumeId } from "../../services/dashboardService";
+import { generateCoverLetter } from "../../services/coverLetterService";
+import LoadingOverlay from "../../components/common/LoadingOverlay";
+import {
+  getFavorites,
+  addFavorite,
+  isFavorite,
+} from "../../services/favoriteService";
 
 export default function MatchingPage() {
-  const [loading, setLoading] =
-    useState(true);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [companies, setCompanies] = useState([]);
+  const [favorites, setFavorites] = useState(() => getFavorites());
+  const [generating, setGenerating] = useState(false);
 
-  const [companies, setCompanies] =
-    useState([]);
+  useEffect(() => {
+    loadDashboard()
+      .then((res) => setCompanies(res.companies ?? []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-  const [manualFavorites, setManualFavorites] =
-    useState(loadManualFavorites);
+  /* CompanyCard 찜 상태 변경 시 favorites 목록 갱신 */
+  function handleFavoriteChange() {
+    setFavorites(getFavorites());
+  }
 
-  async function fetchData() {
+  /* 자소서 생성 */
+  async function handleGenerateCoverLetter({ jobPostingId, companyName, jobTitle }) {
+    if (generating) return;
+    setGenerating(true);
     try {
-      const response =
-        await loadDashboard();
-
-      const favoriteIds =
-        JSON.parse(
-          localStorage.getItem(
-            "favoriteCompanies"
-          ) || "[]"
-        );
-
-      setCompanies(
-        (response.companies || []).map(
-          (company) => ({
-            ...company,
-
-            is_favorite:
-              favoriteIds.includes(
-                company.job_posting_id
-              ),
-          })
-        )
-      );
-    } catch (error) {
-      console.error(error);
+      const result = await generateCoverLetter({ jobPostingId, companyName, jobTitle });
+      if (result?.coverLetterId) {
+        navigate(`/cover-letters/${result.coverLetterId}`);
+      }
+    } catch (e) {
+      alert("자소서 생성 실패: " + (e.response?.data?.message || e.message));
     } finally {
-      setLoading(false);
+      setGenerating(false);
     }
   }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  /* FavoriteSearchSection에서 항목 선택 시 — DB에서 매칭률 조회 후 찜 추가 */
+  async function handleAddFromSearch(item) {
+    const id = item.jobPostingId ?? item.job_posting_id;
+    if (id && isFavorite(id)) return; // 이미 찜
 
-  function handleToggleFavorite(
-    jobPostingId
-  ) {
-    setCompanies((prev) => {
-      const updated =
-        prev.map((company) =>
-          company.job_posting_id ===
-          jobPostingId
-            ? {
-                ...company,
+    let enriched = item;
+    try {
+      const resumeId = getStoredResumeId();
+      if (resumeId && id) {
+        const matchData = await getJobMatchRate(resumeId, id);
+        if (matchData) {
+          enriched = {
+            ...item,
+            overallScore: matchData.overallScore,
+            overall_score: matchData.overallScore,
+            metrics: matchData.metrics,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("[handleAddFromSearch] 매칭률 조회 실패:", e);
+    }
 
-                is_favorite:
-                  !company.is_favorite,
-              }
-            : company
-        );
-
-      const favoriteIds =
-        updated
-          .filter(
-            (company) =>
-              company.is_favorite
-          )
-          .map(
-            (company) =>
-              company.job_posting_id
-          );
-
-      localStorage.setItem(
-        "favoriteCompanies",
-        JSON.stringify(
-          favoriteIds
-        )
-      );
-
-      return updated;
-    });
+    addFavorite(enriched);
+    setFavorites(getFavorites());
   }
 
-  function handleAddManualFavorite(item) {
-    const key = `${item.company_name}__${item.job_title}`;
-    setManualFavorites((prev) => {
-      if (prev.some((f) => `${f.company_name}__${f.job_title}` === key)) return prev;
-      const updated = [...prev, item];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-  }
+  /* 찜 목록에서 쓸 favoriteKeys — FavoriteSearchSection 중복 방지용 */
+  const favoriteKeys = favorites.map(
+    (f) => String(f.jobPostingId ?? f.job_posting_id ?? "")
+  );
 
-  function handleRemoveManualFavorite(item) {
-    const key = `${item.company_name}__${item.job_title}`;
-    setManualFavorites((prev) => {
-      const updated = prev.filter(
-        (f) => `${f.company_name}__${f.job_title}` !== key
-      );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-  }
+  const topCompanies = companies.slice(0, 3);
+  const bestScore = topCompanies[0]?.overallScore ?? topCompanies[0]?.overall_score ?? 0;
 
-  const manualFavoriteKeys = manualFavorites.map(
-    (f) => `${f.company_name}__${f.job_title}`
+  // 추천 기업 맵 (jobPostingId → recommendation 데이터) — 관심 기업 overallScore 보완용
+  const recommendationMap = new Map(
+    companies.map((c) => [String(c.jobPostingId ?? c.job_posting_id), c])
   );
 
   if (loading) {
     return (
-      <div>
-        Loading...
+      <div className="flex h-[400px] items-center justify-center text-slate-400 dark:text-slate-500">
+        불러오는 중...
       </div>
     );
   }
 
-  const sortedCompanies =
-    [...companies]
-      .sort((a, b) => {
-        if (
-          b.overall_score !==
-          a.overall_score
-        ) {
-          return (
-            b.overall_score -
-            a.overall_score
-          );
-        }
-
-        if (
-          b.metrics.tech_stack_fit
-            .score !==
-          a.metrics.tech_stack_fit
-            .score
-        ) {
-          return (
-            b.metrics
-              .tech_stack_fit.score -
-            a.metrics
-              .tech_stack_fit.score
-          );
-        }
-
-        if (
-          b.metrics.business_fit
-            .score !==
-          a.metrics.business_fit
-            .score
-        ) {
-          return (
-            b.metrics.business_fit
-              .score -
-            a.metrics.business_fit
-              .score
-          );
-        }
-
-        if (
-          b.metrics.requirement_fit
-            .score !==
-          a.metrics.requirement_fit
-            .score
-        ) {
-          return (
-            b.metrics
-              .requirement_fit.score -
-            a.metrics
-              .requirement_fit.score
-          );
-        }
-
-        if (
-          b.metrics
-            .action_result_fit
-            .score !==
-          a.metrics
-            .action_result_fit
-            .score
-        ) {
-          return (
-            b.metrics
-              .action_result_fit
-              .score -
-            a.metrics
-              .action_result_fit
-              .score
-          );
-        }
-
-        return (
-          b.metrics.culture_fit
-            .score -
-          a.metrics.culture_fit
-            .score
-        );
-      });
-
-  const topCompanies =
-    sortedCompanies.slice(0, 3);
-
-  const favoriteCompanies =
-    companies.filter(
-      (company) =>
-        company.is_favorite
-    );
-
-  const bestScore =
-    topCompanies[0]
-      ?.overall_score ?? 0;
-
   return (
-    <div
-      className="
-        mx-auto
-        max-w-[1120px]
-        space-y-10
-      "
-    >
+    <div className="mx-auto max-w-[1120px] space-y-10">
+      {generating && <LoadingOverlay />}
+
       <PageHero
         badge="기업 탐색"
         subBadge="AI 기반 기업 추천"
         title="이력서 기반 AI 분석으로 나에게 가장 적합한 기업과 직무를 찾아보세요"
         description="기업 공고와 이력서를 비교해 가장 높은 적합도를 가진 기업을 추천합니다."
         statTitle="최고 매칭률"
-        statValue={`${bestScore.toFixed(
-          2
-        )}%`}
+        statValue={`${Number(bestScore).toFixed(2)}%`}
         statDescription="1차 직무 매칭 결과 기준"
         progressValue={bestScore}
       />
 
       {/* 추천 기업 TOP3 */}
-
       <section>
-
-        <h2
-          className="
-            mb-6
-            text-[24px]
-            font-black
-          "
-        >
-          추천 기업 TOP3
-        </h2>
-
-        <div
-          className="
-            grid
-            gap-6
-            lg:grid-cols-3
-          "
-        >
-          {topCompanies.map(
-            (company) => (
+        <h2 className="mb-6 text-[24px] font-black dark:text-white">추천 기업 TOP3</h2>
+        {topCompanies.length > 0 ? (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {topCompanies.map((company) => (
               <RecommendationCard
-                key={
-                  company.job_posting_id
-                }
+                key={company.recommendationId ?? company.jobPostingId ?? company.job_posting_id}
                 company={company}
-                onToggleFavorite={
-                  handleToggleFavorite
-                }
+                onFavoriteChange={handleFavoriteChange}
+                onGenerateCoverLetter={handleGenerateCoverLetter}
               />
-            )
-          )}
-        </div>
-
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[28px] border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-12 text-center text-slate-500 dark:text-slate-400">
+            아직 추천 기업이 없습니다. 이력서를 제출하면 AI가 기업을 추천해 드려요.
+          </div>
+        )}
       </section>
 
       {/* 기업 검색 */}
-
       <FavoriteSearchSection
-        onFavorite={handleAddManualFavorite}
-        favoriteKeys={manualFavoriteKeys}
+        onFavorite={handleAddFromSearch}
+        favoriteKeys={favoriteKeys}
       />
 
       {/* 관심 기업 */}
-
       <section>
-
-        <h2
-          className="
-            mb-6
-            text-[24px]
-            font-black
-          "
-        >
-          관심 기업
-        </h2>
-
-        {favoriteCompanies.length === 0 && manualFavorites.length === 0 ? (
-          <div
-            className="
-              rounded-[28px]
-              border
-              border-dashed
-              border-slate-300
-              bg-white
-              p-12
-              text-center
-              text-slate-500
-            "
-          >
-            관심 기업이 없습니다.
+        <h2 className="mb-6 text-[24px] font-black dark:text-white">관심 기업</h2>
+        {favorites.length === 0 ? (
+          <div className="rounded-[28px] border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-12 text-center text-slate-500 dark:text-slate-400">
+            관심 기업이 없습니다. 기업 카드의 북마크 또는 검색으로 찜해보세요.
           </div>
         ) : (
           <div className="grid gap-6 lg:grid-cols-3">
-            {favoriteCompanies.map((company) => (
-              <RecommendationCard
-                key={company.job_posting_id}
-                company={company}
-                onToggleFavorite={handleToggleFavorite}
-              />
-            ))}
-            {manualFavorites.map((company) => (
-              <FavoriteCompanyCard
-                key={`${company.company_name}__${company.job_title}`}
-                company={company}
-                onRemove={handleRemoveManualFavorite}
-              />
-            ))}
+            {favorites.map((company) => {
+              const id = company.jobPostingId ?? company.job_posting_id;
+              // 추천 기업 데이터에 있으면 overallScore + metrics 병합
+              const rec = recommendationMap.get(String(id));
+              const enriched = rec
+                ? { ...company, overallScore: rec.overallScore, metrics: rec.metrics }
+                : company;
+              return (
+                <CompanyCard
+                  key={company.recommendationId ?? id}
+                  company={enriched}
+                  onFavoriteChange={handleFavoriteChange}
+                  onGenerateCoverLetter={handleGenerateCoverLetter}
+                />
+              );
+            })}
           </div>
         )}
-
       </section>
 
     </div>

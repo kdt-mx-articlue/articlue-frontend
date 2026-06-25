@@ -4,8 +4,8 @@ import axiosInstance from "../api/axios";
 
 const INTERVIEWER_STYLE_MAP = {
   "친절형": "CALM",
-  "실무형": "NEUTRAL",
-  "압박형": "PRESSURE",
+  "실무형": "PRACTICAL",
+  "압박형": "SHARP",
 };
 
 const CHAT_MODE_MAP = {
@@ -20,6 +20,29 @@ function getResumeId() {
     const raw = localStorage.getItem("articlue-resume-store");
     const parsed = JSON.parse(raw || "{}");
     return parsed?.state?.resumeId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** localStorage에 resumeId 없으면 profile API로 조회 후 저장 */
+async function resolveResumeId(directId) {
+  const id = directId ?? getResumeId();
+  if (id) return id;
+  try {
+    const memberId = localStorage.getItem("memberId");
+    if (!memberId) return null;
+    const res = await axiosInstance.get("/member/profile", { params: { memberId } });
+    const fetched = res.data?.data?.resume?.resumeId ?? null;
+    if (fetched) {
+      try {
+        const raw = localStorage.getItem("articlue-resume-store");
+        const parsed = JSON.parse(raw || '{"state":{},"version":0}');
+        parsed.state.resumeId = fetched;
+        localStorage.setItem("articlue-resume-store", JSON.stringify(parsed));
+      } catch {}
+    }
+    return fetched;
   } catch {
     return null;
   }
@@ -42,7 +65,7 @@ export async function startInterview(setup) {
   } = setup;
 
   const payload = {
-    resumeId:              resume_id ?? getResumeId() ?? null,
+    resumeId:              await resolveResumeId(resume_id),
     jobPostingId:          job_posting_id ?? null,
     targetCompany:         company_name,
     jobPostingTitle:       job_name,

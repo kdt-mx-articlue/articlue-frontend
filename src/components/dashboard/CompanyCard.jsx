@@ -1,40 +1,42 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiBookmark, HiOutlineBookmark } from "react-icons/hi";
+import { isFavorite, toggleFavorite } from "../../services/favoriteService";
 
 /**
  * 통합 기업 카드
  *
- * API 카드 필드:   company_name, job_name, overall_score, job_posting_id, is_favorite, apply_url, career_level, tech_stacks
- * CSV 카드 필드:   company_name, job_title, career_level, deadline, apply_url, tech_stacks
- *
  * Props:
- *  - company              : 위 필드를 가진 객체
- *  - onToggleFavorite(id) : API 카드용 북마크 토글
- *  - onRemove(company)    : CSV 카드용 북마크 클릭 → 관심 기업 해제
+ *  - company           : 기업 데이터 객체 (camelCase or snake_case 모두 허용)
+ *  - onFavoriteChange  : 찜 상태 변경 후 부모에 알릴 콜백 (optional)
  */
-export default function CompanyCard({ company, onToggleFavorite, onRemove }) {
+export default function CompanyCard({ company, onFavoriteChange, onGenerateCoverLetter }) {
   const navigate = useNavigate();
 
-  // 프론트 snake_case 필드 + 백엔드 camelCase 필드 모두 수용
+  // camelCase(실API/CSV) + snake_case(mock) 모두 수용
   const companyName  = company.company_name ?? company.companyName ?? "";
   const jobName      = company.job_name ?? company.jobName ?? company.job_title ?? "";
-  const careerLevel  = company.career_level ?? company.careerCondition ?? "";
+  // career_level(snake) | careerCondition(DB구형) | careerLevel(CSV)
+  const careerLevel  = company.career_level ?? company.careerCondition ?? company.careerLevel ?? "";
   const deadline     = company.deadline ?? company.deadlineDate ?? "";
-  const applyUrl     = company.apply_url ?? company.originalUrl ?? "";
-  const score        = company.overall_score ?? null;
+  const applyUrl     = company.apply_url ?? company.applyUrl ?? company.originalUrl ?? "";
+  const score        = company.overall_score ?? company.overallScore ?? null;
   const jobPostingId = company.job_posting_id ?? company.jobPostingId ?? null;
 
-  // tech_stacks: "Python, FastAPI, Flask" → ["Python", "FastAPI", "Flask"]
-  const techs = company.tech_stacks
-    ? String(company.tech_stacks).split(",").map((t) => t.trim()).filter(Boolean)
+  // tech_stacks(snake, dashboardService가 병합) | techStacks(camelCase CSV 직접 사용 시)
+  const techStr = company.tech_stacks ?? company.techStacks ?? "";
+  const techs = techStr
+    ? String(techStr).split(",").map((t) => t.trim()).filter(Boolean)
     : [];
 
-  // CSV 카드는 항상 북마크가 채워진 상태 (관심 기업에 있으므로)
-  const isBookmarked = onRemove ? true : !!company.is_favorite;
+  // 찜 상태: favoriteService 기준 (localStorage 기반)
+  const [isBookmarked, setIsBookmarked] = useState(() => isFavorite(jobPostingId));
 
   function handleBookmark() {
-    if (onToggleFavorite) onToggleFavorite(jobPostingId);
-    else if (onRemove) onRemove(company);
+    toggleFavorite({ ...company, jobPostingId, companyName, jobName });
+    const next = isFavorite(jobPostingId);
+    setIsBookmarked(next);
+    onFavoriteChange?.();
   }
 
   function goInterview() {
@@ -47,8 +49,18 @@ export default function CompanyCard({ company, onToggleFavorite, onRemove }) {
   }
 
   function goCoverLetter() {
-    if (jobPostingId) navigate(`/cover-letter/${jobPostingId}`);
-    else navigate("/cover-letters");
+    const jobDescription = [company.requirements, company.responsibilities]
+      .filter(Boolean)
+      .join("\n\n");
+
+    navigate("/cover-letters/generate", {
+      state: {
+        jobPostingId,
+        companyName,
+        jobTitle: jobName,
+        jobDescription,
+      },
+    });
   }
 
   return (

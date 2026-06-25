@@ -8,6 +8,8 @@ import {
 } from "../../services/interviewService";
 
 import LoadingOverlay from "../../components/common/LoadingOverlay";
+import api from "../../api/axios.js";
+import { resolveResumeId } from "../../services/reportService.js";
 
 /* ─── 타이핑 스트리밍 ─── */
 function streamText(text, callback, onEnd) {
@@ -159,11 +161,23 @@ export default function InterviewChatPage() {
     if (finishing) return;
     setFinishing(true);
     try {
+      // 1단계: 면접 종료 + 면접 리포트 생성
       await finishInterview(sessionId);
+      if (sessionId) localStorage.setItem("lastInterviewSessionId", String(sessionId));
+
+      // 2단계: 2차 직무 적합도 분석 (면접 결과 반영)
+      const resumeId = await resolveResumeId();
+      if (resumeId) {
+        await api.post(`/resumes/${resumeId}/analyze`, { analysisStage: "FINAL" });
+      }
+
+      // 두 분석 모두 완료 후 리포트 페이지 이동
       navigate(`/interview-report/${job_posting_id || ""}`);
     } catch (err) {
-      console.error("면접 종료 실패:", err);
+      console.error("면접 종료/분석 실패:", err);
       navigate("/interview");
+    } finally {
+      setFinishing(false);
     }
   }
 

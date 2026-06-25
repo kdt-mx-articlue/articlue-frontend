@@ -18,7 +18,7 @@ import {
   HiSpeakerphone,
 } from "react-icons/hi";
 
-import { getInterviewReport } from "../../services/interviewReportService";
+import { getInterviewScoreReport } from "../../services/interviewReportService";
 
 /* ── 카테고리별 아이콘 + 색상 ─────────────────────── */
 const FEEDBACK_META = {
@@ -84,7 +84,7 @@ export default function InterviewResultPage() {
 
   useEffect(() => {
     async function load() {
-      const data = await getInterviewReport(jobPostingId);
+      const data = await getInterviewScoreReport(jobPostingId);
       setReport(data);
     }
     load();
@@ -110,8 +110,10 @@ export default function InterviewResultPage() {
     feedback,
   } = report;
 
-  const durationMin = Math.floor(interview_summary.duration_seconds / 60);
-  const dateStr = interview_summary.interview_date?.replace("T", " ").slice(0, 16);
+  const durationMin = interview_summary?.duration_seconds
+    ? Math.floor(interview_summary.duration_seconds / 60)
+    : null;
+  const dateStr = interview_summary?.interview_date?.replace("T", " ").slice(0, 16) ?? "-";
 
   const overallScore = scores.overall_score;
   const scoreGrade =
@@ -129,7 +131,7 @@ export default function InterviewResultPage() {
         style={{ background: "var(--surface, white)" }}
       >
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          <ModeBadge mode={interview_summary.interview_mode} />
+          <ModeBadge mode={interview_summary?.interview_mode} />
           <span className="text-[12px] font-bold" style={{ color: "var(--text-muted)" }}>
             {dateStr}
           </span>
@@ -223,12 +225,12 @@ export default function InterviewResultPage() {
           면접 정보
         </h2>
         <div className="grid gap-3 md:grid-cols-3">
-          <InfoChip icon={<HiAdjustments />}         label="난이도"      value={interview_summary.difficulty} />
-          <InfoChip icon={<HiUser />}                label="면접관 성향" value={interview_summary.interviewer_type} />
-          <InfoChip icon={<HiQuestionMarkCircle />}  label="질문 수"     value={`${interview_summary.question_count}개`} />
-          <InfoChip icon={<HiClock />}               label="소요 시간"   value={`${durationMin}분`} />
-          <InfoChip icon={<HiBadgeCheck />}          label="완료율"      value={`${interview_summary.completion_rate}%`} />
-          <InfoChip icon={<HiChat />}                label="대화 수"     value={`${interview_summary.chat_log_count}개`} />
+          <InfoChip icon={<HiAdjustments />}         label="난이도"      value={interview_summary?.difficulty ?? "-"} />
+          <InfoChip icon={<HiUser />}                label="면접관 성향" value={interview_summary?.interviewer_type ?? "-"} />
+          <InfoChip icon={<HiQuestionMarkCircle />}  label="질문 수"     value={`${interview_summary?.question_count ?? "-"}개`} />
+          <InfoChip icon={<HiClock />}               label="소요 시간"   value={durationMin != null ? `${durationMin}분` : "-"} />
+          <InfoChip icon={<HiBadgeCheck />}          label="완료율"      value={`${interview_summary?.completion_rate ?? "-"}%`} />
+          <InfoChip icon={<HiChat />}                label="대화 수"     value={`${interview_summary?.chat_log_count ?? "-"}개`} />
         </div>
       </section>
 

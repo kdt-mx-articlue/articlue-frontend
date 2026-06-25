@@ -43,6 +43,7 @@ import ProfilePage from "../pages/Profile/ProfilePage";
 
 import CoverLetterListPage from "../pages/CoverLetter/CoverLetterPage";
 import CoverLetterDetailPage from "../pages/CoverLetter/CoverLetterDetailPage";
+import CoverLetterGeneratePage from "../pages/CoverLetter/CoverLetterGeneratePage";
 
 const router = createBrowserRouter([
   /*
@@ -80,12 +81,6 @@ const router = createBrowserRouter([
     element: <ResumePage />,
   },
 
-  {
-    path: "/cover-letter/edit/${coverLetterId}",
-    element: (
-        <CoverLetterDetailPage />
-    ),
-  },
 
   /*
    =========================
@@ -225,10 +220,18 @@ const router = createBrowserRouter([
         ),
       },
 
-    //   자소서 관리
+      // 자소서 관리
       {
         path: "/cover-letters",
         element: <CoverLetterListPage />,
+      },
+      {
+        path: "/cover-letters/generate",
+        element: <CoverLetterGeneratePage />,
+      },
+      {
+        path: "/cover-letters/:coverLetterId",
+        element: <CoverLetterDetailPage />,
       },
     ],
   },

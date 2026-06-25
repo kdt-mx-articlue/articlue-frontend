@@ -19,6 +19,9 @@ import {
   githubAuthLogin,
 } from "../../services/authApi";
 
+import api from "../../api/axios";
+import { useResumeStore } from "../../store/resumeStore";
+
 import {
   SiKakaotalk,
   SiNaver,
@@ -27,8 +30,8 @@ import {
 } from "react-icons/si";
 
 export default function LoginPage() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
+  const setResumeId = useResumeStore((s) => s.setResumeId);
 
   const [loginId,
     setLoginId] =
@@ -93,13 +96,25 @@ export default function LoginPage() {
 
       saveAuthUser({
         ...user,
-        loginType:
-          "local",
+        loginType: "local",
       });
 
-      navigate(
-        "/resume"
-      );
+      // 이미 이력서가 있는 회원은 대시보드로, 없으면 이력서 작성 페이지로
+      const memberId = user?.memberId ?? user?.member_id ?? user?.id ?? null;
+      let hasResume = false;
+      if (memberId) {
+        try {
+          const profileRes = await api.get("/member/profile", { params: { memberId } });
+          const resumeId = profileRes.data?.data?.resume?.resumeId;
+          if (resumeId) {
+            setResumeId(resumeId);
+            hasResume = true;
+          }
+        } catch {
+          // 프로필 조회 실패해도 로그인은 유지
+        }
+      }
+      navigate(hasResume ? "/" : "/resume");
     } catch (error) {
       console.error(
         error

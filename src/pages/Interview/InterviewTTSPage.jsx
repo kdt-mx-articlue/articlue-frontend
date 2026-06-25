@@ -309,6 +309,8 @@ export default function InterviewTTSPage() {
     setFinishing(true);
     try {
       await finishInterview(sessionId);
+      // 채팅 기록 조회를 위해 sessionId 저장
+      if (sessionId) localStorage.setItem("lastInterviewSessionId", String(sessionId));
       navigate(`/interview-report/${job_posting_id || ""}`);
     } catch {
       navigate("/interview");

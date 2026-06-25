@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { getProfile } from "../../api/profileApi.js";
+import { getFavorites } from "../../services/favoriteService.js";
 
 import PageHero from "../../components/common/PageHero";
 
@@ -26,18 +28,19 @@ export default function ProfilePage() {
   const loadProfile =
     async () => {
       try {
-        /*
-        const response =
-          await getProfile();
-
-        setProfile(
-          response.data
-        );
-        */
-
-        setProfile(null);
+        const data = await getProfile();
+        const favorites = getFavorites();
+        setProfile({
+          ...data,
+          favoriteCompanies: favorites,
+          activity: {
+            ...data?.activity,
+            favoriteCompanyCount: favorites.length,
+          },
+        });
       } catch (error) {
         console.error(error);
+        setProfile(null);
       } finally {
         setLoading(false);
       }
