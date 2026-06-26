@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { searchJobPostings } from "../../services/jobPostingService";
 
-export default function FavoriteSearchSection({ onFavorite, favoriteKeys }) {
+export default function FavoriteSearchSection({ onFavorite, favoriteKeys, scoreMap = {} }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -73,6 +73,7 @@ export default function FavoriteSearchSection({ onFavorite, favoriteKeys }) {
               results.map((item) => {
                 const id = String(item.jobPostingId ?? "");
                 const alreadyFavorited = id && favoriteKeys.includes(id);
+                const score = scoreMap[id];
                 return (
                   <li
                     key={item.jobPostingId}
@@ -90,6 +91,11 @@ export default function FavoriteSearchSection({ onFavorite, favoriteKeys }) {
                       <p className="text-[12px] text-slate-500">
                         {item.jobName} · {item.careerLevel ?? item.career_level}
                       </p>
+                      {score != null && (
+                        <p className="mt-0.5 text-[11px] font-semibold text-blue-500">
+                          1차 직무 매칭률 {Number(score).toFixed(1)}%
+                        </p>
+                      )}
                     </div>
                     {alreadyFavorited ? (
                       <span className="flex-shrink-0 rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-semibold text-blue-500">
