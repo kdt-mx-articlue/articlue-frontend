@@ -121,6 +121,51 @@ export async function loadDashboard() {
  * 관심 기업 클릭 시 resumeId + jobPostingId 기준으로 DB에서 매칭률 단건 조회
  * - 분석 이력이 없으면 null 반환 (에러 아님)
  */
+/**
+ * MatchingPage 전용 - 추천 기업 목록 로드 + CSV 병합
+ * loadDashboard()의 기업 조회 부분을 분리한 경량 버전.
+ * resumeId를 함께 반환하여 이후 favorites 매칭률 조회에 재사용.
+ * @returns {{ companies: Array, resumeId: number|null }}
+ */
+export async function loadRecommendations() {
+  const resumeId = await resolveResumeId();
+  if (!resumeId) return { companies: [], resumeId: null };
+
+  try {
+    const res = await api.get(`/resumes/${resumeId}/recommendations`, {
+      params: { stage: "RESUME" },
+    });
+    const raw = res.data?.data;
+    const arr = Array.isArray(raw) ? raw : (raw?.recommendations ?? []);
+
+    const enriched = await Promise.all(
+      arr.map(async (rec) => {
+        try {
+          const job = await getJobPostingDetail(rec.jobPostingId);
+          return {
+            ...rec,
+            companyName:      job?.companyName      ?? "",
+            jobName:          job?.jobName          ?? "",
+            careerLevel:      job?.careerLevel      ?? "",
+            deadline:         job?.deadline         ?? "",
+            applyUrl:         job?.applyUrl         ?? "",
+            tech_stacks:      job?.techStacks       ?? "",
+            requirements:     job?.requirements     ?? "",
+            responsibilities: job?.responsibilities ?? "",
+          };
+        } catch {
+          return rec;
+        }
+      })
+    );
+
+    return { companies: sortCompanies(enriched), resumeId };
+  } catch (e) {
+    console.error("[dashboardService] 추천 기업 로드 실패:", e);
+    return { companies: [], resumeId };
+  }
+}
+
 export async function getJobMatchRate(resumeId, jobPostingId, stage = "RESUME") {
   try {
     const res = await api.get(`/resumes/${resumeId}/job-match`, {

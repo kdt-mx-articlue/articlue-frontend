@@ -24,7 +24,7 @@ export default function InterviewSetupPage() {
   // 면접 설정
   const [difficulty, setDifficulty] = useState("중");
   const [interviewerType, setInterviewerType] = useState("실무형");
-  const [questionCount, setQuestionCount] = useState(10);
+  const [questionCount, setQuestionCount] = useState(5);
   const [interviewMode, setInterviewMode] = useState("CHATBOT");
 
   // 쿼리 파라미터 자동 선택 (?company=XXX&job=YYY)
@@ -37,7 +37,13 @@ export default function InterviewSetupPage() {
       // 파라미터로 들어온 경우 해당 키워드로 미리 검색
       searchJobPostings(company, 50).then((items) => {
         setSearchResults(items);
-        if (job) setSelectedJobName(job);
+        if (job) {
+          setSelectedJobName(job);
+          const posting = items.find(
+            (p) => p.companyName === company && p.jobName === job
+          );
+          setSelectedJobPostingId(posting?.jobPostingId ?? null);
+        }
       });
     }
   }, [searchParams]);
@@ -276,10 +282,9 @@ export default function InterviewSetupPage() {
               onChange={(e) => setQuestionCount(Number(e.target.value))}
               className="w-full rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
             >
+              <option value={3}>3문항</option>
               <option value={5}>5문항</option>
-              <option value={10}>10문항</option>
-              <option value={15}>15문항</option>
-              <option value={20}>20문항</option>
+              <option value={7}>7문항</option>
             </select>
           </div>
 

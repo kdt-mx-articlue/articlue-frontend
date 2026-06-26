@@ -6,13 +6,12 @@ import RecommendationCard from "../../components/dashboard/RecommendationCard";
 import FavoriteSearchSection from "../../components/dashboard/FavoriteSearchSection";
 import CompanyCard from "../../components/dashboard/CompanyCard";
 
-import { loadDashboard, getJobMatchRate, getStoredResumeId } from "../../services/dashboardService";
+import { loadRecommendations, getJobMatchRate, getStoredResumeId } from "../../services/dashboardService";
 import { generateCoverLetter } from "../../services/coverLetterService";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
 import {
   getFavorites,
   addFavorite,
-  isFavorite,
 } from "../../services/favoriteService";
 
 export default function MatchingPage() {
@@ -21,13 +20,47 @@ export default function MatchingPage() {
   const [companies, setCompanies] = useState([]);
   const [favorites, setFavorites] = useState(() => getFavorites());
   const [generating, setGenerating] = useState(false);
+  const [resumeId, setResumeId] = useState(null);
 
+  /* Effect 1: 페이지 렌더링 시 서버에서 추천 기업 목록 조회 */
   useEffect(() => {
-    loadDashboard()
-      .then((res) => setCompanies(res.companies ?? []))
+    let cancelled = false;
+    loadRecommendations()
+      .then(({ companies: recs, resumeId: rid }) => {
+        if (cancelled) return;
+        setCompanies(recs);
+        setResumeId(rid);
+      })
       .catch(console.error)
-      .finally(() => setLoading(false));
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, []);
+
+  /* Effect 2: resumeId 확보 후 overallScore 없는 관심 기업 매칭률 일괄 조회 */
+  useEffect(() => {
+    if (!resumeId) return;
+    const missing = getFavorites().filter((f) => {
+      const s = f.overallScore ?? f.overall_score;
+      return s === null || s === undefined;
+    });
+    if (missing.length === 0) return;
+
+    Promise.allSettled(
+      missing.map(async (fav) => {
+        const id = fav.jobPostingId ?? fav.job_posting_id;
+        if (!id) return;
+        const matchData = await getJobMatchRate(resumeId, id);
+        if (matchData?.overallScore != null) {
+          addFavorite({
+            ...fav,
+            overallScore:  matchData.overallScore,
+            overall_score: matchData.overallScore,
+            metrics:       matchData.metrics,
+          });
+        }
+      })
+    ).then(() => setFavorites(getFavorites()));
+  }, [resumeId]);
 
   /* CompanyCard 찜 상태 변경 시 favorites 목록 갱신 */
   function handleFavoriteChange() {
@@ -50,22 +83,22 @@ export default function MatchingPage() {
     }
   }
 
-  /* FavoriteSearchSection에서 항목 선택 시 — DB에서 매칭률 조회 후 찜 추가 */
+  /* FavoriteSearchSection에서 항목 선택 시 — DB에서 매칭률 조회 후 찜 추가/업데이트 */
   async function handleAddFromSearch(item) {
     const id = item.jobPostingId ?? item.job_posting_id;
-    if (id && isFavorite(id)) return; // 이미 찜
+    if (!id) return;
 
     let enriched = item;
     try {
-      const resumeId = getStoredResumeId();
-      if (resumeId && id) {
-        const matchData = await getJobMatchRate(resumeId, id);
+      const rid = resumeId ?? getStoredResumeId();
+      if (rid) {
+        const matchData = await getJobMatchRate(rid, id);
         if (matchData) {
           enriched = {
             ...item,
-            overallScore: matchData.overallScore,
+            overallScore:  matchData.overallScore,
             overall_score: matchData.overallScore,
-            metrics: matchData.metrics,
+            metrics:       matchData.metrics,
           };
         }
       }
@@ -73,6 +106,7 @@ export default function MatchingPage() {
       console.warn("[handleAddFromSearch] 매칭률 조회 실패:", e);
     }
 
+    // 이미 찜한 경우도 최신 매칭률로 덮어씀
     addFavorite(enriched);
     setFavorites(getFavorites());
   }
@@ -88,6 +122,16 @@ export default function MatchingPage() {
   // 추천 기업 맵 (jobPostingId → recommendation 데이터) — 관심 기업 overallScore 보완용
   const recommendationMap = new Map(
     companies.map((c) => [String(c.jobPostingId ?? c.job_posting_id), c])
+  );
+
+  // 검색 드롭다운용 scoreMap (jobPostingId → overallScore)
+  const scoreMap = Object.fromEntries(
+    companies
+      .filter((c) => (c.overallScore ?? c.overall_score) != null)
+      .map((c) => [
+        String(c.jobPostingId ?? c.job_posting_id),
+        c.overallScore ?? c.overall_score,
+      ])
   );
 
   if (loading) {
@@ -138,6 +182,7 @@ export default function MatchingPage() {
       <FavoriteSearchSection
         onFavorite={handleAddFromSearch}
         favoriteKeys={favoriteKeys}
+        scoreMap={scoreMap}
       />
 
       {/* 관심 기업 */}
