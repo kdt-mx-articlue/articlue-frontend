@@ -91,6 +91,16 @@ export default function Topbar() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => { setIsOpen(false); navigate("/resume"); }}
+                  className="w-full px-4 py-3 text-left text-sm transition"
+                  style={{ color: "var(--text-main)" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-soft)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                >
+                  이력서 수정
+                </button>
+                <button
+                  type="button"
                   onClick={handleLogout}
                   className="w-full border-t px-4 py-3 text-left text-sm font-semibold text-red-500 transition"
                   style={{ borderColor: "var(--border)" }}

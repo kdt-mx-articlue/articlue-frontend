@@ -13,7 +13,7 @@ async function loadCSV() {
       skipEmptyLines: true,
       complete: (results) => {
         cachedData = results.data.map((row, idx) => ({
-          jobPostingId:  idx + 1,
+          jobPostingId:  Number(row.job_posting_id) || idx + 1,
           companyName:   row.company_name   ?? "",
           jobName:       row.job_title      ?? "",
           careerLevel:   row.career_level   ?? "",
