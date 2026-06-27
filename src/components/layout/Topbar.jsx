@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getCurrentUser, clearAuthStorage } from "../../utils/auth";
+import { getCurrentUser, clearAuthStorage, isAuthenticated } from "../../utils/auth";
 
 export default function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
+  const loggedIn = isAuthenticated();
   const user = getCurrentUser();
   const userName = user?.name || user?.nickname || user?.login || user?.loginId || "사용자";
   const loginType = localStorage.getItem("articlue_login_type") || "local";
@@ -51,13 +52,21 @@ export default function Topbar() {
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-4"
         >
-          <div className="text-right">
-            <div className="font-bold" style={{ color: "var(--text-main)" }}>{userName}</div>
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{loginType}</div>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-black text-white">
-            {profileInitial}
-          </div>
+          {loggedIn ? (
+            <>
+              <div className="text-right">
+                <div className="font-bold" style={{ color: "var(--text-main)" }}>{userName}</div>
+                <div className="text-xs" style={{ color: "var(--text-muted)" }}>{loginType}</div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-black text-white">
+                {profileInitial}
+              </div>
+            </>
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm font-black text-white">
+              ?
+            </div>
+          )}
         </button>
 
         {isOpen && (
@@ -68,26 +77,41 @@ export default function Topbar() {
               border: "1px solid var(--border)",
             }}
           >
-            <button
-              type="button"
-              onClick={() => { setIsOpen(false); navigate("/mypage"); }}
-              className="w-full px-4 py-3 text-left text-sm transition"
-              style={{ color: "var(--text-main)" }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-soft)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-            >
-              마이페이지
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="w-full border-t px-4 py-3 text-left text-sm font-semibold text-red-500 transition"
-              style={{ borderColor: "var(--border)" }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-soft)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-            >
-              로그아웃
-            </button>
+            {loggedIn ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { setIsOpen(false); navigate("/mypage"); }}
+                  className="w-full px-4 py-3 text-left text-sm transition"
+                  style={{ color: "var(--text-main)" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-soft)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                >
+                  마이페이지
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full border-t px-4 py-3 text-left text-sm font-semibold text-red-500 transition"
+                  style={{ borderColor: "var(--border)" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-soft)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { setIsOpen(false); navigate("/login"); }}
+                className="w-full px-4 py-3 text-left text-sm font-semibold transition"
+                style={{ color: "var(--text-main)" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-soft)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                로그인하기
+              </button>
+            )}
           </div>
         )}
       </div>
