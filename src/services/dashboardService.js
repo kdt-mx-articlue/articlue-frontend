@@ -13,7 +13,8 @@ function getMemberId() {
 function getResumeId() {
   try {
     const raw = localStorage.getItem("articlue-resume-store");
-    return JSON.parse(raw || "{}")?.state?.resumeId ?? null;
+    // Zustand persist 포맷: { state: { resume: { resumeId: X } } }
+    return JSON.parse(raw || "{}")?.state?.resume?.resumeId ?? null;
   } catch {
     return null;
   }
@@ -39,12 +40,13 @@ function sortCompanies(companies) {
 }
 
 /**
- * resumeId를 localStorage에서 읽고, 없으면 API로 조회 후 store에 저장
+ * 항상 profile API로 현재 로그인된 회원의 최신 resumeId를 조회한다.
+ * localStorage fast path는 사용하지 않는다:
+ *   Zustand persist가 로그아웃 후에도 메모리에 old resumeId를 유지하다가
+ *   다음 state 변경 시 localStorage에 다시 write하므로, fast path를
+ *   사용하면 다른 계정에서도 동일한 stale resumeId를 보게 되는 버그가 있음.
  */
 async function resolveResumeId() {
-  let resumeId = getResumeId();
-  if (resumeId) return resumeId;
-
   const memberId = getMemberId();
   if (!memberId) return null;
 
@@ -52,12 +54,12 @@ async function resolveResumeId() {
     const profileRes = await api.get("/member/profile", { params: { memberId } });
     const id = profileRes.data?.data?.resume?.resumeId ?? null;
     if (id) {
-      // Zustand persist 포맷으로 직접 저장
       useResumeStore.getState().setResumeId(id);
     }
     return id;
   } catch {
-    return null;
+    // 네트워크 오류 시에만 localStorage 값으로 fallback
+    return getResumeId();
   }
 }
 

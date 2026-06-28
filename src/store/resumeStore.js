@@ -840,6 +840,14 @@ export const useResumeStore = create(
     }),
     {
       name: "articlue-resume-store",
+      // 구버전 버그: interviewService.js가 state.resumeId(잘못된 경로)에 값을 썼던 데이터 정리
+      migrate: (persistedState) => {
+        if (persistedState && "resumeId" in persistedState) {
+          delete persistedState.resumeId;
+        }
+        return persistedState;
+      },
+      version: 1,
     }
   )
 );

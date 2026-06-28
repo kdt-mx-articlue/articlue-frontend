@@ -19,7 +19,7 @@ function getResumeId() {
   try {
     const raw = localStorage.getItem("articlue-resume-store");
     const parsed = JSON.parse(raw || "{}");
-    return parsed?.state?.resumeId ?? null;
+    return parsed?.state?.resume?.resumeId ?? null;
   } catch {
     return null;
   }
@@ -38,7 +38,8 @@ async function resolveResumeId(directId) {
       try {
         const raw = localStorage.getItem("articlue-resume-store");
         const parsed = JSON.parse(raw || '{"state":{},"version":0}');
-        parsed.state.resumeId = fetched;
+        if (!parsed.state.resume) parsed.state.resume = {};
+        parsed.state.resume.resumeId = fetched;
         localStorage.setItem("articlue-resume-store", JSON.stringify(parsed));
       } catch {}
     }
