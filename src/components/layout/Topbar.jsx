@@ -1,11 +1,29 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getCurrentUser, clearAuthStorage, isAuthenticated } from "../../utils/auth";
+import { loadResume } from "../../services/resumeApi";
+import { useResumeStore } from "../../store/resumeStore";
 
 export default function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const setResume = useResumeStore((s) => s.setResume);
+
+  async function handleEditResume() {
+    setIsOpen(false);
+    try {
+      const raw = localStorage.getItem("articlue-resume-store");
+      const resumeId = JSON.parse(raw || "{}")?.state?.resume?.resumeId ?? null;
+      if (resumeId) {
+        const storeData = await loadResume(resumeId);
+        setResume(storeData);
+      }
+    } catch (e) {
+      console.error("이력서 로드 실패:", e);
+    }
+    navigate("/resume");
+  }
 
   const loggedIn = isAuthenticated();
   const user = getCurrentUser();
@@ -91,7 +109,7 @@ export default function Topbar() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setIsOpen(false); navigate("/resume"); }}
+                  onClick={handleEditResume}
                   className="w-full px-4 py-3 text-left text-sm transition"
                   style={{ color: "var(--text-main)" }}
                   onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-soft)"}

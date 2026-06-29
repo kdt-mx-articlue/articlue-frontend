@@ -2,9 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHero from "../../components/common/PageHero";
 import { searchJobPostings } from "../../services/jobPostingService";
+import { getCoverLetters } from "../../services/coverLetterService";
 
 export default function CoverLetterPage() {
   const navigate = useNavigate();
+
+  // ── 기존 자소서 목록 ─────────────────────────────────────
+  const [coverLetters, setCoverLetters] = useState([]);
+
+  useEffect(() => {
+    getCoverLetters().then(setCoverLetters).catch(console.error);
+  }, []);
 
   // ── 기업/직무 선택 ───────────────────────────────────────
   const [companyQuery, setCompanyQuery]         = useState("");
@@ -191,6 +199,32 @@ export default function CoverLetterPage() {
         >
           자소서 생성하기
         </button>
+      </section>
+
+      {/* 기존 자소서 목록 */}
+      <section className="rounded-[32px] border border-slate-200 bg-white p-8 dark:bg-slate-900 dark:border-slate-700">
+        <h2 className="text-2xl font-black mb-6 dark:text-white">생성된 자소서</h2>
+        {coverLetters.length === 0 ? (
+          <p className="text-center text-slate-400 py-8">생성된 자소서가 없습니다.</p>
+        ) : (
+          <div className="space-y-3">
+            {coverLetters.map((cl) => (
+              <div
+                key={cl.coverLetterId}
+                onClick={() => navigate(`/cover-letters/${cl.coverLetterId}`)}
+                className="flex items-center justify-between rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-6 py-4 cursor-pointer hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+              >
+                <div>
+                  <div className="font-black text-slate-800 dark:text-slate-200">{cl.companyName}</div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{cl.jobTitle}</div>
+                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 shrink-0 ml-4">
+                  {cl.createdAt ? new Date(cl.createdAt).toLocaleDateString("ko-KR") : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
     </div>

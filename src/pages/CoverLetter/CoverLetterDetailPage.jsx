@@ -30,6 +30,46 @@ export default function CoverLetterDetailPage() {
     }
   };
 
+  const handleDownloadPdf = () => {
+    const title = `${coverLetter?.companyName ?? ""}_${coverLetter?.jobTitle ?? ""}_자소서`;
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>${title}</title>
+          <style>
+            body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; padding: 40px; color: #1e293b; }
+            h1 { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+            .subtitle { font-size: 14px; color: #64748b; margin-bottom: 32px; }
+            .item { margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid #e2e8f0; }
+            .item:last-child { border-bottom: none; }
+            .qnum { font-size: 16px; font-weight: 900; color: #2563eb; margin-bottom: 6px; }
+            .question { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+            .answer { font-size: 14px; line-height: 2; white-space: pre-wrap; color: #334155; }
+          </style>
+        </head>
+        <body>
+          <h1>${coverLetter?.companyName ?? ""} — ${coverLetter?.jobTitle ?? ""}</h1>
+          <div class="subtitle">자기소개서</div>
+          ${(coverLetter?.items ?? []).map((item, i) => `
+            <div class="item">
+              <div class="qnum">Q${i + 1}</div>
+              <div class="question">${item.question ?? ""}</div>
+              <div class="answer">${item.answer ?? ""}</div>
+            </div>
+          `).join("")}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 300);
+  };
+
   const handleCopy = async () => {
     if (!coverLetter?.items) return;
     const text = coverLetter.items
@@ -82,6 +122,13 @@ export default function CoverLetterDetailPage() {
           <>
             {/* 액션 버튼 */}
             <div className="flex justify-end gap-3 mb-8">
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                className="px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              >
+                PDF 저장
+              </button>
               <button
                 type="button"
                 onClick={handleCopy}
