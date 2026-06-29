@@ -165,13 +165,7 @@ export default function InterviewChatPage() {
       await finishInterview(sessionId);
       if (sessionId) localStorage.setItem("lastInterviewSessionId", String(sessionId));
 
-      // 2단계: 2차 직무 적합도 분석 (면접 결과 반영)
-      const resumeId = await resolveResumeId();
-      if (resumeId) {
-        await api.post(`/resumes/${resumeId}/analyze`, { analysisStage: "FINAL" });
-      }
-
-      // 두 분석 모두 완료 후 리포트 페이지 이동
+      // 백엔드 finishInterview에서 단일 공고 FINAL 분석을 자동 처리하므로 별도 호출 불필요
       navigate(`/interview-report/${job_posting_id || ""}`);
     } catch (err) {
       console.error("면접 종료/분석 실패:", err);

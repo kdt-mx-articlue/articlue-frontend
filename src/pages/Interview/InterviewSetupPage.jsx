@@ -140,7 +140,7 @@ export default function InterviewSetupPage() {
   function getResumeId() {
     try {
       const raw = localStorage.getItem("articlue-resume-store");
-      return JSON.parse(raw || "{}")?.state?.resumeId ?? null;
+      return JSON.parse(raw || "{}")?.state?.resume?.resumeId ?? null;
     } catch {
       return null;
     }

@@ -12,17 +12,32 @@ async function loadCSV() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        cachedData = results.data.map((row, idx) => ({
-          jobPostingId:  Number(row.job_posting_id) || idx + 1,
-          companyName:   row.company_name   ?? "",
-          jobName:       row.job_title      ?? "",
-          careerLevel:   row.career_level   ?? "",
-          deadline:      row.deadline       ?? "",
-          applyUrl:      row.apply_url      ?? "",
-          techStacks:    row.tech_stacks    ?? "",
-          requirements:  row.requirements   ?? "",
-          responsibilities: row.responsibilities ?? "",
-        }));
+        // job_posting_id 컬럼이 CSV에 없으면 경고 출력
+        // → AI의 job_service.py가 JOB_CSV_PATH를 프론트엔드 public으로 지정해 CSV를 재생성해야 함
+        const hasIdColumn = results.meta.fields?.includes("job_posting_id");
+        if (!hasIdColumn) {
+          console.warn(
+            "[jobPostingService] CSV에 job_posting_id 컬럼이 없습니다. " +
+            "AI 서비스의 job_service.py를 실행해 CSV를 재생성하세요. " +
+            "현재는 행 순서(idx+1)를 ID로 대체합니다."
+          );
+        }
+
+        cachedData = results.data.map((row, idx) => {
+          const explicitId = Number(row.job_posting_id);
+          return {
+            // CSV에 job_posting_id 컬럼이 있으면 사용, 없으면 행 순서(1-based) 폴백
+            jobPostingId:     explicitId > 0 ? explicitId : idx + 1,
+            companyName:      row.company_name      ?? "",
+            jobName:          row.job_title         ?? "",
+            careerLevel:      row.career_level      ?? "",
+            deadline:         row.deadline          ?? "",
+            applyUrl:         row.apply_url         ?? "",
+            techStacks:       row.tech_stacks       ?? "",
+            requirements:     row.requirements      ?? "",
+            responsibilities: row.responsibilities  ?? "",
+          };
+        });
         resolve(cachedData);
       },
       error: reject,

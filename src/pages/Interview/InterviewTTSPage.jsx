@@ -463,8 +463,44 @@ export default function InterviewTTSPage() {
               )}
             </div>
 
-            {/* ── 질문 카드 ── */}
-            {questionText && (
+            {/* ── 자막 바 (speaking 중) ── */}
+            {speaking && questionText && (
+              <div style={{
+                width: "100%", maxWidth: "760px",
+                marginBottom: "12px",
+                background: "rgba(0,0,0,0.72)",
+                borderRadius: "16px",
+                padding: "14px 24px",
+                backdropFilter: "blur(6px)",
+                border: "1px solid rgba(34,211,238,0.35)",
+                boxShadow: "0 0 20px rgba(34,211,238,0.12)",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                  <span style={{
+                    width: "6px", height: "6px", borderRadius: "50%",
+                    background: "#22d3ee", display: "inline-block",
+                    boxShadow: "0 0 6px #22d3ee",
+                    animation: "recordPulse 1s ease infinite",
+                  }} />
+                  <span style={{ fontSize: "10px", fontWeight: 900, letterSpacing: "0.2em", color: "#22d3ee" }}>
+                    LIVE · 면접관 질문
+                  </span>
+                  {questionType === "FOLLOW_UP" && (
+                    <span style={{
+                      fontSize: "10px", fontWeight: 700,
+                      background: "rgba(251,146,60,0.2)", color: "#fb923c",
+                      borderRadius: "999px", padding: "1px 8px",
+                    }}>꼬리질문</span>
+                  )}
+                </div>
+                <p style={{ margin: 0, fontSize: "16px", fontWeight: 600, lineHeight: 1.7, color: "#f0f9ff", letterSpacing: "0.01em" }}>
+                  {questionText}
+                </p>
+              </div>
+            )}
+
+            {/* ── 질문 카드 (재생 완료 후 표시) ── */}
+            {!speaking && questionText && (
               <div style={{
                 width: "100%", maxWidth: "760px",
                 background: "#0D162D",

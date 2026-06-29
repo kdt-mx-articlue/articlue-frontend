@@ -35,6 +35,19 @@ function Badge({ label, className = "" }) {
   );
 }
 
+/* ── 피드백 타입 메타 ── */
+const FEEDBACK_META = {
+  STRENGTH:       { label: "강점",       color: "#10b981", bg: "#ecfdf5", dark: "#065f46" },
+  WEAKNESS:       { label: "보완",       color: "#ef4444", bg: "#fef2f2", dark: "#7f1d1d" },
+  WEAKNESS_POINT: { label: "보완",       color: "#ef4444", bg: "#fef2f2", dark: "#7f1d1d" },
+  OVERALL:        { label: "종합평가",   color: "#6366f1", bg: "#eef2ff", dark: "#3730a3" },
+  LOGIC:          { label: "논리력",     color: "#8b5cf6", bg: "#f5f3ff", dark: "#4c1d95" },
+  TECH:           { label: "기술이해",   color: "#2563eb", bg: "#eff6ff", dark: "#1e3a8a" },
+  BUSINESS:       { label: "비즈니스",   color: "#f59e0b", bg: "#fffbeb", dark: "#78350f" },
+  EVIDENCE:       { label: "경험근거",   color: "#10b981", bg: "#ecfdf5", dark: "#065f46" },
+  JOB_FIT:        { label: "직무적합",   color: "#0ea5e9", bg: "#f0f9ff", dark: "#0c4a6e" },
+};
+
 /* ── 통계 아이템 ── */
 function StatItem({ icon, label, value, sub }) {
   return (
@@ -90,8 +103,8 @@ export default function InterviewHistoryPage() {
   /* 완료율 */
   const completionRate = totalQ > 0 ? Math.round((totalA / totalQ) * 100) : null;
 
-  /* chatHistory: camelCase(실API) or chat_history(mock) */
-  const chatHistory = report.chatHistory ?? report.chat_history ?? [];
+  /* chatHistory: 실API는 qaList, mock은 chatHistory / chat_history */
+  const chatHistory = report.qaList ?? report.chatHistory ?? report.chat_history ?? [];
 
   /* question_order / questionOrder 기준으로 그룹핑 */
   const groups = chatHistory.reduce((acc, item) => {
@@ -237,6 +250,78 @@ export default function InterviewHistoryPage() {
           </div>
         )}
       </section>
+
+      {/* ══ 면접 피드백 ══ */}
+      {(() => {
+        const items = report.reportItems ?? [];
+        if (items.length === 0) return null;
+
+        const strengths  = items.filter(i => i.feedbackType === "STRENGTH");
+        const weaknesses = items.filter(i => i.feedbackType === "WEAKNESS" || i.feedbackType === "WEAKNESS_POINT");
+        const overall    = items.find(i  => i.feedbackType === "OVERALL");
+        const details    = items.filter(i => !["STRENGTH","WEAKNESS","WEAKNESS_POINT","OVERALL"].includes(i.feedbackType));
+
+        return (
+          <section className="rounded-[28px] bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-8 space-y-8">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">면접 피드백</h2>
+
+            {/* 종합평가 */}
+            {overall?.feedbackContent && (
+              <div className="rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 p-5">
+                <p className="text-[11px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mb-2">종합평가</p>
+                <p className="text-[14px] leading-7 text-slate-700 dark:text-slate-300">{overall.feedbackContent}</p>
+              </div>
+            )}
+
+            {/* 강점 / 보완 */}
+            {(strengths.length > 0 || weaknesses.length > 0) && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {strengths.length > 0 && (
+                  <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 p-5">
+                    <p className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-3">💪 강점</p>
+                    <ul className="space-y-2">
+                      {strengths.map((s, i) => (
+                        <li key={i} className="text-[13px] leading-6 text-slate-700 dark:text-slate-300">• {s.feedbackContent}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {weaknesses.length > 0 && (
+                  <div className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 p-5">
+                    <p className="text-[11px] font-black text-red-500 dark:text-red-400 uppercase tracking-widest mb-3">🔧 보완점</p>
+                    <ul className="space-y-2">
+                      {weaknesses.map((w, i) => (
+                        <li key={i} className="text-[13px] leading-6 text-slate-700 dark:text-slate-300">• {w.feedbackContent}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 카테고리별 상세 피드백 */}
+            {details.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-[13px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">카테고리별 피드백</p>
+                {details.map((item, i) => {
+                  const meta = FEEDBACK_META[item.feedbackType] ?? { label: item.feedbackType, color: "#64748b", bg: "#f8fafc" };
+                  return (
+                    <div key={i} className="rounded-2xl border border-slate-100 dark:border-slate-700 p-5">
+                      <span
+                        className="inline-block rounded-full px-3 py-0.5 text-[11px] font-black mb-2"
+                        style={{ background: meta.bg, color: meta.color }}
+                      >
+                        {meta.label}
+                      </span>
+                      <p className="text-[13px] leading-7 text-slate-700 dark:text-slate-300">{item.feedbackContent}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        );
+      })()}
 
       {/* ══ 하단 버튼 ══ */}
       <div className="flex gap-3">

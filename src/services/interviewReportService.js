@@ -10,16 +10,22 @@ function getLastSessionId() {
 }
 
 /**
- * GET /api/interviews/sessions/:sessionId/history
- * InterviewHistoryPage용 — Q&A 채팅 기록
+ * GET /api/interviews/sessions/:sessionId/history + /report
+ * InterviewHistoryPage용 — Q&A 채팅 기록 + 피드백 코멘트
  */
 export async function getInterviewReport(jobPostingId) {
   const sessionId = getLastSessionId();
   if (!sessionId) return null;
 
   try {
-    const res = await api.get(`/interviews/sessions/${sessionId}/history`);
-    return res.data?.data ?? null;
+    const [historyRes, reportRes] = await Promise.all([
+      api.get(`/interviews/sessions/${sessionId}/history`),
+      api.get(`/interviews/sessions/${sessionId}/report`),
+    ]);
+    const session = historyRes.data?.data ?? null;
+    if (!session) return null;
+    session.reportItems = reportRes.data?.data ?? [];
+    return session;
   } catch (e) {
     console.error("[interviewReportService] 면접 이력 로드 실패:", e);
     return null;

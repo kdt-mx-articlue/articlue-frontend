@@ -9,7 +9,7 @@ import {
 } from "react-icons/hi";
 
 import ReportRadarChart from "../../components/report/ReportRadarChart";
-import { getReportData } from "../../services/reportService";
+import { getReportData, requestDetailAnalysis } from "../../services/reportService";
 
 /* ── 메타 ── */
 const METRIC_META = {
@@ -119,13 +119,40 @@ export default function ReportPage() {
   const navigate = useNavigate();
   const { jobPostingId } = useParams();
   const [report, setReport] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
+      // 1. 리포트 데이터 로드
       const data = await getReportData(jobPostingId);
+      if (cancelled) return;
       setReport(data);
+
+      // 2. 1차 점수는 있는데 action plan이 없으면 자동으로 상세 분석 트리거
+      const score = data.resumeAnalysis?.overallScore ?? data.resumeAnalysis?.overall_score;
+      const hasActionPlan =
+        (data.resumeActionPlan?.weaknesses?.length ?? 0) > 0 ||
+        (data.resumeActionPlan?.recommendations?.length ?? 0) > 0;
+
+      if (score != null && !hasActionPlan) {
+        setAnalyzing(true);
+        try {
+          await requestDetailAnalysis(jobPostingId);
+          if (cancelled) return;
+          const refreshed = await getReportData(jobPostingId);
+          if (!cancelled) setReport(refreshed);
+        } catch (e) {
+          console.error("[ReportPage] 자동 상세 분석 실패:", e);
+        } finally {
+          if (!cancelled) setAnalyzing(false);
+        }
+      }
     }
+
     load();
+    return () => { cancelled = true; };
   }, [jobPostingId]);
 
   if (!report) {
@@ -212,11 +239,22 @@ export default function ReportPage() {
         {/* 1차 */}
         <div className="rounded-[28px] border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-8">
           <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">1차 · 이력서 매칭</div>
-          <div className={`text-6xl font-black ${scoreColor(overallScore1)}`}>
-            {Number(overallScore1).toFixed(1)}<span className="text-3xl">%</span>
-          </div>
-          <p className="mt-1 text-[12px] text-slate-400 dark:text-slate-500">서류 기반 직무 매칭 분석</p>
-          <ReportRadarChart metrics={resumeAnalysis?.metrics} />
+          {overallScore1 != null ? (
+            <>
+              <div className={`text-6xl font-black ${scoreColor(overallScore1)}`}>
+                {Number(overallScore1).toFixed(1)}<span className="text-3xl">%</span>
+              </div>
+              <p className="mt-1 text-[12px] text-slate-400 dark:text-slate-500">서류 기반 직무 매칭 분석</p>
+              <ReportRadarChart metrics={resumeAnalysis?.metrics} />
+            </>
+          ) : (
+            <div className="flex h-[200px] items-center justify-center text-slate-400 dark:text-slate-500">
+              <div className="text-center">
+                <p className="text-[20px] font-black text-slate-300">분석 전</p>
+                <p className="mt-2 text-[13px]">이력서를 제출하면 분석 결과가 표시됩니다.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 2차 */}
@@ -276,7 +314,14 @@ export default function ReportPage() {
             ? resumeActionPlan.weaknesses
                 .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
                 .map((item) => <WeaknessCard key={item.title} item={item} />)
-            : <p className="text-sm text-slate-400 dark:text-slate-500">분석 데이터가 준비 중입니다.</p>
+            : overallScore1 != null
+              ? (
+                <div className="flex flex-col items-center gap-3 py-8">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                  <p className="text-sm text-slate-400 dark:text-slate-500">AI 상세 분석을 진행 중입니다…</p>
+                </div>
+              )
+              : <p className="text-sm text-slate-400 dark:text-slate-500">이력서를 제출하면 분석 결과가 표시됩니다.</p>
           }
         </div>
 
@@ -299,7 +344,14 @@ export default function ReportPage() {
             ? resumeActionPlan.recommendations
                 .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
                 .map((item) => <RecommendCard key={item.title} item={item} />)
-            : <p className="text-sm text-slate-400 dark:text-slate-500">분석 데이터가 준비 중입니다.</p>
+            : overallScore1 != null
+              ? (
+                <div className="flex flex-col items-center gap-3 py-8">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                  <p className="text-sm text-slate-400 dark:text-slate-500">AI 상세 분석을 진행 중입니다…</p>
+                </div>
+              )
+              : <p className="text-sm text-slate-400 dark:text-slate-500">이력서를 제출하면 분석 결과가 표시됩니다.</p>
           }
         </div>
 
