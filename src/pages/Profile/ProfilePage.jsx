@@ -138,11 +138,7 @@ export default function ProfilePage() {
           gap-8
         "
       >
-        <HistorySection
-          histories={
-            profile?.histories
-          }
-        />
+        <HistorySection />
 
         <PaymentHistorySection
           payments={

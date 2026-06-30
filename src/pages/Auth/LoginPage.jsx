@@ -114,7 +114,7 @@ export default function LoginPage() {
           // 프로필 조회 실패해도 로그인은 유지
         }
       }
-      navigate(hasResume ? "/" : "/resume");
+      navigate(hasResume ? "/" : "/demo-setup");
     } catch (error) {
       console.error(
         error

@@ -118,3 +118,12 @@ export async function finishInterview(sessionId) {
   );
   return res.data;
 }
+
+export async function getSessions() {
+  const memberId = localStorage.getItem("memberId");
+  if (!memberId) return [];
+  const res = await axiosInstance.get("/interviews/sessions", {
+    params: { memberId },
+  });
+  return res.data?.data ?? [];
+}

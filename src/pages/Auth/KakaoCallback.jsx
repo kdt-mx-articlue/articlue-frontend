@@ -19,7 +19,7 @@ export default function KakaoCallback() {
         const user = result?.data || result;
         saveAuthUser({ ...user, loginType: "kakao" });
 
-        const redirectPath = localStorage.getItem("redirectAfterLogin") || "/home";
+        const redirectPath = localStorage.getItem("redirectAfterLogin") || "/demo-setup";
         localStorage.removeItem("redirectAfterLogin");
         navigate(redirectPath, { replace: true });
       })

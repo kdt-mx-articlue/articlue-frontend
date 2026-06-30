@@ -47,6 +47,8 @@ import ResumePage from "../pages/Resume/ResumePage";
 
 import ProfilePage from "../pages/Profile/ProfilePage";
 
+import DemoSetupPage from "../pages/Demo/DemoSetupPage";
+
 import CoverLetterListPage from "../pages/CoverLetter/CoverLetterPage";
 import CoverLetterDetailPage from "../pages/CoverLetter/CoverLetterDetailPage";
 import CoverLetterGeneratePage from "../pages/CoverLetter/CoverLetterGeneratePage";
@@ -85,6 +87,11 @@ const router = createBrowserRouter([
   {
     path: "/resume",
     element: <PrivateRoute><ResumePage /></PrivateRoute>,
+  },
+
+  {
+    path: "/demo-setup",
+    element: <DemoSetupPage />,
   },
 
 
