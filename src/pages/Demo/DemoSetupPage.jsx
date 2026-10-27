@@ -13,7 +13,7 @@ const PRESETS = {
     resumeId: null,
     resumeInfo: {
       resumeTitle: "RAG와 LLM 기반 서비스 구현 경험을 갖춘 AI 백엔드 개발자 이력서",
-      desiredJob: "AI 개발자 / AI 백엔드 개발자 / LLM 서비스 개발자",
+      desiredJob: "AI 엔지니어",
       introduction:
         "Python, FastAPI, LangChain, RAG, Vector DB를 활용해 문서 기반 질의응답과 AI 분석 서비스를 구현한 AI 개발자입니다.",
       resumeStatus: "DRAFT",
@@ -23,24 +23,25 @@ const PRESETS = {
     techStack: {
       languages: ["Python", "JavaScript", "SQL"],
       techs: [
-        { techCategoryCode: "langchain", techName: "LangChain" },
-        { techCategoryCode: "langgraph", techName: "LangGraph" },
-        { techCategoryCode: "openai", techName: "OpenAI API" },
-        { techCategoryCode: "huggingface", techName: "Hugging Face" },
-        { techCategoryCode: "sklearn", techName: "Scikit-learn" },
-        { techCategoryCode: "pandas", techName: "Pandas/NumPy" },
-        { techCategoryCode: "fastapi", techName: "FastAPI" },
-        { techCategoryCode: "chromadb", techName: "ChromaDB" },
-        { techCategoryCode: "faiss", techName: "FAISS" },
-        { techCategoryCode: "docker", techName: "Docker" },
+        { techCategoryCode: "T102009", techName: "LangChain" },
+        { techCategoryCode: "T102046", techName: "LangGraph" },
+        { techCategoryCode: "T102047", techName: "OpenAI API" },
+        { techCategoryCode: "T102048", techName: "Hugging Face" },
+        { techCategoryCode: "T102007", techName: "Scikit-Learn" },
+        { techCategoryCode: "T102049", techName: "Pandas" },
+        { techCategoryCode: "T102050", techName: "NumPy" },
+        { techCategoryCode: "T102001", techName: "FastAPI" },
+        { techCategoryCode: "T103007", techName: "ChromaDB" },
+        { techCategoryCode: "T103008", techName: "FAISS" },
+        { techCategoryCode: "T104002", techName: "Docker" },
       ],
     },
     education: {
       educationType: "university",
       highschool: {
         educationId: null, isGed: false, schoolType: "고등학교",
-        schoolName: "", track: "", major: "", graduationStatus: "졸업",
-        gpa: "", startYm: "", endYm: "",
+        schoolName: "○○고등학교", track: "이과", major: "", graduationStatus: "졸업",
+        gpa: "", startYm: "2017-03", endYm: "2020-02",
       },
       universities: [
         {
@@ -48,7 +49,7 @@ const PRESETS = {
           schoolType: "대학교",
           schoolName: "광주○○대학교",
           major: "인공지능융합학과",
-          graduationStatus: "졸업예정",
+          graduationStatus: "졸업",
           gpa: "",
           gpaScale: "4.5",
           startYm: "2020-03",
@@ -111,7 +112,7 @@ const PRESETS = {
       { certificateId: null, certificateName: "SQLD", acquiredYm: "2025-11", issuer: "한국데이터산업진흥원" },
     ],
     portfolios: [],
-    github: { connected: false, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
+    github: { connected: false, demoMode: true, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
   },
 
   /* ── 프론트엔드 개발자 ── */
@@ -119,7 +120,7 @@ const PRESETS = {
     resumeId: null,
     resumeInfo: {
       resumeTitle: "사용자 흐름과 API 연동을 고려하는 React 프론트엔드 개발자 이력서",
-      desiredJob: "프론트엔드 개발자 / React 개발자",
+      desiredJob: "프론트엔드 개발자",
       introduction:
         "React, TypeScript, 상태 관리, REST API 연동 경험을 바탕으로 사용자 중심의 웹 화면을 구현하는 프론트엔드 개발자입니다.",
       resumeStatus: "DRAFT",
@@ -129,23 +130,23 @@ const PRESETS = {
     techStack: {
       languages: ["JavaScript", "TypeScript", "HTML", "CSS"],
       techs: [
-        { techCategoryCode: "react", techName: "React" },
-        { techCategoryCode: "vite", techName: "Vite" },
-        { techCategoryCode: "reactrouter", techName: "React Router" },
-        { techCategoryCode: "zustand", techName: "Zustand" },
-        { techCategoryCode: "tanstack", techName: "TanStack Query" },
-        { techCategoryCode: "axios", techName: "Axios" },
-        { techCategoryCode: "tailwind", techName: "Tailwind CSS" },
-        { techCategoryCode: "figma", techName: "Figma" },
-        { techCategoryCode: "git", techName: "Git" },
+        { techCategoryCode: "T102010", techName: "React" },
+        { techCategoryCode: "T102040", techName: "Vite" },
+        { techCategoryCode: "T102041", techName: "React Router" },
+        { techCategoryCode: "T102042", techName: "Zustand" },
+        { techCategoryCode: "T102043", techName: "TanStack Query" },
+        { techCategoryCode: "T102044", techName: "Axios" },
+        { techCategoryCode: "T102045", techName: "Tailwind CSS" },
+        { techCategoryCode: "T105001", techName: "Figma" },
+        { techCategoryCode: "T104022", techName: "Git" },
       ],
     },
     education: {
       educationType: "university",
       highschool: {
         educationId: null, isGed: false, schoolType: "고등학교",
-        schoolName: "", track: "", major: "", graduationStatus: "졸업",
-        gpa: "", startYm: "", endYm: "",
+        schoolName: "○○고등학교", track: "이과", major: "", graduationStatus: "졸업",
+        gpa: "", startYm: "2017-03", endYm: "2020-02",
       },
       universities: [
         {
@@ -153,7 +154,7 @@ const PRESETS = {
           schoolType: "대학교",
           schoolName: "○○대학교",
           major: "소프트웨어학과",
-          graduationStatus: "졸업예정",
+          graduationStatus: "졸업",
           gpa: "",
           gpaScale: "4.5",
           startYm: "2020-03",
@@ -225,7 +226,7 @@ const PRESETS = {
       { certificateId: null, certificateName: "정보처리기사 필기 합격", acquiredYm: "2025-08", issuer: "한국산업인력공단" },
     ],
     portfolios: [],
-    github: { connected: false, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
+    github: { connected: false, demoMode: true, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
   },
 
   /* ── 백엔드 개발자 ── */
@@ -233,7 +234,7 @@ const PRESETS = {
     resumeId: null,
     resumeInfo: {
       resumeTitle: "DB 설계와 트랜잭션 처리 경험을 갖춘 Java 백엔드 개발자 이력서",
-      desiredJob: "백엔드 개발자 / Java Spring 백엔드 개발자",
+      desiredJob: "백엔드 개발자",
       introduction:
         "Spring Boot 기반 REST API 개발, 데이터베이스 설계, 트랜잭션 처리, 서버 간 API 연동 경험을 갖춘 백엔드 개발자입니다.",
       resumeStatus: "DRAFT",
@@ -243,24 +244,24 @@ const PRESETS = {
     techStack: {
       languages: ["Java", "JavaScript", "SQL"],
       techs: [
-        { techCategoryCode: "spring", techName: "Spring Boot" },
-        { techCategoryCode: "springmvc", techName: "Spring MVC" },
-        { techCategoryCode: "springsecurity", techName: "Spring Security" },
-        { techCategoryCode: "jpa", techName: "JPA" },
-        { techCategoryCode: "mybatis", techName: "MyBatis" },
-        { techCategoryCode: "oracle", techName: "Oracle" },
-        { techCategoryCode: "mysql", techName: "MySQL" },
-        { techCategoryCode: "redis", techName: "Redis" },
-        { techCategoryCode: "docker", techName: "Docker" },
-        { techCategoryCode: "aws", techName: "AWS EC2" },
+        { techCategoryCode: "T102018", techName: "Spring Boot" },
+        { techCategoryCode: "T102019", techName: "Spring" },
+        { techCategoryCode: "T102051", techName: "Spring Security" },
+        { techCategoryCode: "T102021", techName: "JPA" },
+        { techCategoryCode: "T102020", techName: "MyBatis" },
+        { techCategoryCode: "T103005", techName: "Oracle" },
+        { techCategoryCode: "T103001", techName: "MySQL" },
+        { techCategoryCode: "T103004", techName: "Redis" },
+        { techCategoryCode: "T104002", techName: "Docker" },
+        { techCategoryCode: "T104001", techName: "AWS" },
       ],
     },
     education: {
       educationType: "university",
       highschool: {
         educationId: null, isGed: false, schoolType: "고등학교",
-        schoolName: "", track: "", major: "", graduationStatus: "졸업",
-        gpa: "", startYm: "", endYm: "",
+        schoolName: "○○고등학교", track: "이과", major: "", graduationStatus: "졸업",
+        gpa: "", startYm: "2017-03", endYm: "2020-02",
       },
       universities: [
         {
@@ -268,7 +269,7 @@ const PRESETS = {
           schoolType: "대학교",
           schoolName: "○○대학교",
           major: "컴퓨터공학과",
-          graduationStatus: "졸업예정",
+          graduationStatus: "졸업",
           gpa: "",
           gpaScale: "4.5",
           startYm: "2020-03",
@@ -350,7 +351,7 @@ const PRESETS = {
       { certificateId: null, certificateName: "정보처리기사 필기 합격", acquiredYm: "2025-08", issuer: "한국산업인력공단" },
     ],
     portfolios: [],
-    github: { connected: false, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
+    github: { connected: false, demoMode: true, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
   },
 };
 
@@ -450,9 +451,9 @@ export default function DemoSetupPage() {
         <p style={{ fontSize: "15px", color: "#64748b", lineHeight: 1.8 }}>
           역할을 선택하면 이력서가 자동으로 채워집니다.
           <br />
-          <span style={{ color: "#3b82f6", fontWeight: 700 }}>GitHub 연동</span>과{" "}
-          <span style={{ color: "#3b82f6", fontWeight: 700 }}>포트폴리오</span>는
-          이후 직접 입력해 주세요.
+          <span style={{ color: "#3b82f6", fontWeight: 700 }}>GitHub 연동 없이</span> 바로 저장할 수 있으며,{" "}
+          <span style={{ color: "#3b82f6", fontWeight: 700 }}>GitHub · 포트폴리오</span>는
+          원하면 직접 추가할 수 있습니다.
         </p>
       </div>
 
