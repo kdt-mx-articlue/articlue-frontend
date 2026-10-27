@@ -6,7 +6,7 @@ import {
 import { isAuthenticated } from "../utils/auth";
 
 function PrivateRoute({ children }) {
-  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+  return isAuthenticated() ? children : <Navigate to="/demo-setup" replace />;
 }
 
 import DashboardLayout from "../layouts/DashboardLayout";

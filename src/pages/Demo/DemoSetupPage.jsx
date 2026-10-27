@@ -1,5 +1,8 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useResumeStore } from "../../store/resumeStore";
+import { isAuthenticated } from "../../utils/auth";
+import { createDemoSession } from "../../services/demoSession";
 
 /* ───────────────────────────────────────────────────────────
    역할별 이력서 프리셋 (제공 데이터 기준)
@@ -397,13 +400,32 @@ const ROLES = [
 export default function DemoSetupPage() {
   const navigate = useNavigate();
   const setResume = useResumeStore((s) => s.setResume);
+  const resetResume = useResumeStore((s) => s.resetResume);
+  const [loadingKey, setLoadingKey] = useState(null);
+  const [error, setError] = useState("");
 
-  function handleSelect(key) {
-    if (key === "custom") {
-      navigate("/resume");
-      return;
+  async function handleSelect(key) {
+    if (loadingKey) return;
+    setError("");
+
+    // 비로그인 방문자는 체험 계정을 자동으로 만들어 바로 시작
+    if (!isAuthenticated()) {
+      try {
+        setLoadingKey(key);
+        await createDemoSession();
+      } catch (e) {
+        console.error(e);
+        setError("체험 계정을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        setLoadingKey(null);
+        return;
+      }
     }
-    setResume(PRESETS[key]);
+
+    if (key === "custom") {
+      resetResume();
+    } else {
+      setResume(structuredClone(PRESETS[key]));
+    }
     navigate("/resume");
   }
 
@@ -472,13 +494,15 @@ export default function DemoSetupPage() {
             key={role.key}
             type="button"
             onClick={() => handleSelect(role.key)}
+            disabled={loadingKey !== null}
             style={{
+              opacity: loadingKey && loadingKey !== role.key ? 0.5 : 1,
               background: "#ffffff",
               border: `2px solid #e2e8f0`,
               borderRadius: "28px",
               padding: "36px 28px 28px",
               textAlign: "left",
-              cursor: "pointer",
+              cursor: loadingKey ? "wait" : "pointer",
               transition: "all 0.2s ease",
               boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
             }}
@@ -563,15 +587,30 @@ export default function DemoSetupPage() {
                 textAlign: "center",
               }}
             >
-              이 역할로 이력서 채우기 →
+              {loadingKey === role.key ? "체험 계정 준비 중..." : "이 역할로 이력서 채우기 →"}
             </div>
           </button>
         ))}
       </div>
 
+      {error && (
+        <p style={{ marginTop: "24px", fontSize: "14px", color: "#dc2626", fontWeight: 700 }}>
+          {error}
+        </p>
+      )}
+
       <p style={{ marginTop: "44px", fontSize: "13px", color: "#94a3b8" }}>
         이력서 저장 후 AI 분석 · 자소서 생성 · 면접 시뮬레이션을 이용할 수 있습니다.
       </p>
+
+      {!isAuthenticated() && (
+        <p style={{ marginTop: "12px", fontSize: "13px", color: "#64748b" }}>
+          회원가입 없이 바로 체험할 수 있습니다. 이미 계정이 있다면{" "}
+          <Link to="/login" style={{ color: "#3b82f6", fontWeight: 700 }}>
+            로그인
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

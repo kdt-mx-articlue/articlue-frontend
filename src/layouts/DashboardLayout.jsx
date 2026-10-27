@@ -6,7 +6,8 @@ import { isAuthenticated } from "../utils/auth";
 
 export default function DashboardLayout() {
   if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+    // 비로그인 방문자는 체험(데모) 화면부터 시작
+    return <Navigate to="/demo-setup" replace />;
   }
 
   return (
