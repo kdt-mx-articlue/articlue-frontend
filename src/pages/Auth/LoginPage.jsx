@@ -59,37 +59,6 @@ export default function LoginPage() {
     }, 2500);
   };
 
-  async function completeLogin(data) {
-    const user =
-      data?.data ||
-      data?.member ||
-      data?.user ||
-      data;
-
-    saveAuthUser({
-      ...user,
-      loginType: "local",
-    });
-
-    // 이미 이력서가 있는 회원은 대시보드로, 없으면 이력서 작성 페이지로
-    const memberId = user?.memberId ?? user?.member_id ?? user?.id ?? null;
-    let hasResume = false;
-    if (memberId) {
-      try {
-        const profileRes = await api.get("/member/profile", { params: { memberId } });
-        const resumeId = profileRes.data?.data?.resume?.resumeId;
-        if (resumeId) {
-          setResumeId(resumeId);
-          hasResume = true;
-        }
-      } catch {
-        // 프로필 조회 실패해도 로그인은 유지
-      }
-    }
-    navigate(hasResume ? "/" : "/demo-setup");
-  }
-
-
   async function handleLogin(
     e
   ) {
@@ -119,7 +88,33 @@ export default function LoginPage() {
           password,
         });
 
-      await completeLogin(data);
+      const user =
+        data?.data ||
+        data?.member ||
+        data?.user ||
+        data;
+
+      saveAuthUser({
+        ...user,
+        loginType: "local",
+      });
+
+      // 이미 이력서가 있는 회원은 대시보드로, 없으면 이력서 작성 페이지로
+      const memberId = user?.memberId ?? user?.member_id ?? user?.id ?? null;
+      let hasResume = false;
+      if (memberId) {
+        try {
+          const profileRes = await api.get("/member/profile", { params: { memberId } });
+          const resumeId = profileRes.data?.data?.resume?.resumeId;
+          if (resumeId) {
+            setResumeId(resumeId);
+            hasResume = true;
+          }
+        } catch {
+          // 프로필 조회 실패해도 로그인은 유지
+        }
+      }
+      navigate(hasResume ? "/" : "/demo-setup");
     } catch (error) {
       console.error(
         error
@@ -376,37 +371,6 @@ export default function LoginPage() {
                 : "로그인"}
             </button>
           </form>
-
-          <button
-            type="button"
-            onClick={() => navigate("/demo-setup")}
-            disabled={
-              loading
-            }
-            className="
-              mt-3
-              h-14
-              w-full
-              rounded-full
-              border-2
-              border-blue-600
-              bg-white
-              font-black
-              text-blue-600
-            "
-          >
-            회원가입 없이 체험하기
-          </button>
-          <p
-            className="
-              mt-2
-              text-center
-              text-xs
-              text-slate-500
-            "
-          >
-            직군을 고르면 체험 계정이 자동으로 만들어지고 샘플 이력서가 채워집니다.
-          </p>
 
           <div
             className="
