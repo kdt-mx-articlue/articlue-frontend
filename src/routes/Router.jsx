@@ -6,7 +6,7 @@ import {
 import { isAuthenticated } from "../utils/auth";
 
 function PrivateRoute({ children }) {
-  return isAuthenticated() ? children : <Navigate to="/demo-setup" replace />;
+  return isAuthenticated() ? children : <Navigate to="/start" replace />;
 }
 
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -48,6 +48,7 @@ import ResumePage from "../pages/Resume/ResumePage";
 import ProfilePage from "../pages/Profile/ProfilePage";
 
 import DemoSetupPage from "../pages/Demo/DemoSetupPage";
+import StartPage from "../pages/Start/StartPage";
 
 import CoverLetterListPage from "../pages/CoverLetter/CoverLetterPage";
 import CoverLetterDetailPage from "../pages/CoverLetter/CoverLetterDetailPage";
@@ -87,6 +88,11 @@ const router = createBrowserRouter([
   {
     path: "/resume",
     element: <PrivateRoute><ResumePage /></PrivateRoute>,
+  },
+
+  {
+    path: "/start",
+    element: <StartPage />,
   },
 
   {
