@@ -9,6 +9,7 @@ import {
 
 import {
   login,
+  signup,
 } from "../../services/authApi";
 
 import {
@@ -32,6 +33,7 @@ import {
 export default function LoginPage() {
   const navigate = useNavigate();
   const setResumeId = useResumeStore((s) => s.setResumeId);
+  const resetResume = useResumeStore((s) => s.resetResume);
 
   const [loginId,
     setLoginId] =
@@ -58,6 +60,80 @@ export default function LoginPage() {
       setToast("");
     }, 2500);
   };
+
+  async function completeLogin(data) {
+    const user =
+      data?.data ||
+      data?.member ||
+      data?.user ||
+      data;
+
+    saveAuthUser({
+      ...user,
+      loginType: "local",
+    });
+
+    // 이미 이력서가 있는 회원은 대시보드로, 없으면 이력서 작성 페이지로
+    const memberId = user?.memberId ?? user?.member_id ?? user?.id ?? null;
+    let hasResume = false;
+    if (memberId) {
+      try {
+        const profileRes = await api.get("/member/profile", { params: { memberId } });
+        const resumeId = profileRes.data?.data?.resume?.resumeId;
+        if (resumeId) {
+          setResumeId(resumeId);
+          hasResume = true;
+        }
+      } catch {
+        // 프로필 조회 실패해도 로그인은 유지
+      }
+    }
+    navigate(hasResume ? "/" : "/demo-setup");
+  }
+
+  /*
+   * 체험 계정: 방문자마다 임시 계정을 새로 만들어 로그인
+   * (공용 계정 하나를 쓰면 방문자끼리 이력서·면접 기록이 섞이므로)
+   */
+  async function handleDemoLogin() {
+    const suffix =
+      Date.now().toString(36) +
+      Math.random().toString(36).slice(2, 6);
+    const demoLoginId = `demo_${suffix}`;
+    const demoPassword = `demo${suffix}1!`;
+
+    try {
+      setLoading(true);
+
+      await signup({
+        loginId: demoLoginId,
+        password: demoPassword,
+        passwordConfirm: demoPassword,
+        email: `${demoLoginId}@demo.articlue.local`,
+        name: "체험 사용자",
+        nickname: "체험 사용자",
+        phone: "010-0000-0000",
+        birth: "2000-01-01",
+        address: "서울",
+        gender: "남성",
+        military: "해당없음",
+      });
+
+      const data = await login({
+        loginId: demoLoginId,
+        password: demoPassword,
+      });
+
+      // 이력서 작성 중 남아 있던 이전 입력값 제거 후 데모 선택 화면으로
+      resetResume();
+      await completeLogin(data);
+    } catch (error) {
+      console.error(error);
+      showToast("체험 계정 생성에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleLogin(
     e
@@ -88,33 +164,7 @@ export default function LoginPage() {
           password,
         });
 
-      const user =
-        data?.data ||
-        data?.member ||
-        data?.user ||
-        data;
-
-      saveAuthUser({
-        ...user,
-        loginType: "local",
-      });
-
-      // 이미 이력서가 있는 회원은 대시보드로, 없으면 이력서 작성 페이지로
-      const memberId = user?.memberId ?? user?.member_id ?? user?.id ?? null;
-      let hasResume = false;
-      if (memberId) {
-        try {
-          const profileRes = await api.get("/member/profile", { params: { memberId } });
-          const resumeId = profileRes.data?.data?.resume?.resumeId;
-          if (resumeId) {
-            setResumeId(resumeId);
-            hasResume = true;
-          }
-        } catch {
-          // 프로필 조회 실패해도 로그인은 유지
-        }
-      }
-      navigate(hasResume ? "/" : "/demo-setup");
+      await completeLogin(data);
     } catch (error) {
       console.error(
         error
@@ -371,6 +421,37 @@ export default function LoginPage() {
                 : "로그인"}
             </button>
           </form>
+
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={
+              loading
+            }
+            className="
+              mt-3
+              h-14
+              w-full
+              rounded-full
+              border-2
+              border-blue-600
+              bg-white
+              font-black
+              text-blue-600
+            "
+          >
+            회원가입 없이 체험하기
+          </button>
+          <p
+            className="
+              mt-2
+              text-center
+              text-xs
+              text-slate-500
+            "
+          >
+            임시 체험 계정이 만들어지고, 직군을 고르면 샘플 이력서가 채워집니다.
+          </p>
 
           <div
             className="
