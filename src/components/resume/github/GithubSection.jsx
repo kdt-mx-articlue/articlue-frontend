@@ -1,9 +1,11 @@
 import { useState } from "react";
 
+import { useResumeStore } from "../../../store/resumeStore";
 import GithubConnectModal from "./GithubConnectModal";
 
 export default function GithubSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const demoMode = useResumeStore((state) => state.resume.github?.demoMode);
 
   const [githubUser, setGithubUser] = useState(() => {
     const user = sessionStorage.getItem("githubUser");
@@ -70,7 +72,9 @@ export default function GithubSection() {
         </div>
       ) : (
         <div className="github-profile-card" style={{ justifyContent: "center" }}>
-          GitHub 계정을 연동하면 프로필 정보가 표시됩니다.
+          {demoMode
+            ? "데모 이력서는 GitHub 연동 없이 저장할 수 있습니다. (선택 사항)"
+            : "GitHub 계정을 연동하면 프로필 정보가 표시됩니다."}
         </div>
       )}
 

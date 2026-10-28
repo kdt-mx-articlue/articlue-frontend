@@ -44,7 +44,7 @@ export default function NaverCallback() {
         const redirectPath =
           savedRedirectPath && savedRedirectPath !== "/login"
             ? savedRedirectPath
-            : "/home";
+            : "/demo-setup";
         localStorage.removeItem("redirectAfterLogin");
         window.location.replace(redirectPath);
       })

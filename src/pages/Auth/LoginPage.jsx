@@ -114,7 +114,7 @@ export default function LoginPage() {
           // 프로필 조회 실패해도 로그인은 유지
         }
       }
-      navigate(hasResume ? "/" : "/resume");
+      navigate(hasResume ? "/" : "/demo-setup");
     } catch (error) {
       console.error(
         error
@@ -134,7 +134,7 @@ export default function LoginPage() {
         .VITE_KAKAO_JS_KEY;
 
     const redirectUri =
-      "http://localhost:5173/auth/kakao/callback";
+      `${window.location.origin}/auth/kakao/callback`;
 
     window.location.href =
       `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
@@ -148,7 +148,7 @@ export default function LoginPage() {
         .VITE_NAVER_CLIENT_ID;
 
     const redirectUri =
-      "http://localhost:5173/auth/naver/callback";
+      `${window.location.origin}/auth/naver/callback`;
 
     const state =
       Math.random()
@@ -168,7 +168,7 @@ export default function LoginPage() {
 
   async function handleGithubLogin() {
     const redirectUri =
-      "http://localhost:5173/auth/github/callback";
+      `${window.location.origin}/auth/github/callback`;
 
     const state =
       Math.random()

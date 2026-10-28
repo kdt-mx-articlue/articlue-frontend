@@ -20,6 +20,7 @@ export const techStackData = {
       { techCategoryCode: "T102019", techName: "Spring" },
       { techCategoryCode: "T102020", techName: "MyBatis" },
       { techCategoryCode: "T102021", techName: "JPA" },
+      { techCategoryCode: "T102051", techName: "Spring Security" },
     ],
 
     JavaScript: [
@@ -28,6 +29,12 @@ export const techStackData = {
       { techCategoryCode: "T102011", techName: "Vue.js" },
       { techCategoryCode: "T102016", techName: "Express.js" },
       { techCategoryCode: "T102017", techName: "NestJS" },
+      { techCategoryCode: "T102040", techName: "Vite" },
+      { techCategoryCode: "T102041", techName: "React Router" },
+      { techCategoryCode: "T102042", techName: "Zustand" },
+      { techCategoryCode: "T102043", techName: "TanStack Query" },
+      { techCategoryCode: "T102044", techName: "Axios" },
+      { techCategoryCode: "T102045", techName: "Tailwind CSS" },
     ],
 
     TypeScript: [
@@ -35,6 +42,12 @@ export const techStackData = {
       { techCategoryCode: "T102013", techName: "Next.js" },
       { techCategoryCode: "T102012", techName: "Angular" },
       { techCategoryCode: "T102017", techName: "NestJS" },
+      { techCategoryCode: "T102040", techName: "Vite" },
+      { techCategoryCode: "T102041", techName: "React Router" },
+      { techCategoryCode: "T102042", techName: "Zustand" },
+      { techCategoryCode: "T102043", techName: "TanStack Query" },
+      { techCategoryCode: "T102044", techName: "Axios" },
+      { techCategoryCode: "T102045", techName: "Tailwind CSS" },
     ],
 
     Python: [
@@ -44,6 +57,8 @@ export const techStackData = {
       { techCategoryCode: "T102004", techName: "PyTorch" },
       { techCategoryCode: "T102005", techName: "TensorFlow" },
       { techCategoryCode: "T102009", techName: "LangChain" },
+      { techCategoryCode: "T102049", techName: "Pandas" },
+      { techCategoryCode: "T102050", techName: "NumPy" },
     ],
 
     Kotlin: [
@@ -60,6 +75,8 @@ export const techStackData = {
       { techCategoryCode: "T103004", techName: "Redis" },
       { techCategoryCode: "T103005", techName: "Oracle" },
       { techCategoryCode: "T103006", techName: "MariaDB" },
+      { techCategoryCode: "T103007", techName: "ChromaDB" },
+      { techCategoryCode: "T103008", techName: "FAISS" },
     ],
 
     Cloud: [
@@ -76,6 +93,7 @@ export const techStackData = {
       { techCategoryCode: "T104007", techName: "Jenkins" },
       { techCategoryCode: "T104006", techName: "GitHub Actions" },
       { techCategoryCode: "T104017", techName: "Docker Compose" },
+      { techCategoryCode: "T104022", techName: "Git" },
     ],
 
     AI: [
@@ -83,6 +101,13 @@ export const techStackData = {
       { techCategoryCode: "T102004", techName: "PyTorch" },
       { techCategoryCode: "T102007", techName: "Scikit-Learn" },
       { techCategoryCode: "T102009", techName: "LangChain" },
+      { techCategoryCode: "T102046", techName: "LangGraph" },
+      { techCategoryCode: "T102047", techName: "OpenAI API" },
+      { techCategoryCode: "T102048", techName: "Hugging Face" },
+    ],
+
+    Tools: [
+      { techCategoryCode: "T105001", techName: "Figma" },
     ],
   },
 };

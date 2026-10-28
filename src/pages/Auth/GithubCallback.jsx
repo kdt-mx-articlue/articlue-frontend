@@ -48,8 +48,8 @@ export default function GithubCallback() {
         const tokenData = await githubAuthToken({
           code,
           state,
-          redirectUri: "http://localhost:5173/auth/github/callback",
-          redirect_uri: "http://localhost:5173/auth/github/callback",
+          redirectUri: `${window.location.origin}/auth/github/callback`,
+          redirect_uri: `${window.location.origin}/auth/github/callback`,
         });
 
         const tokenUser =

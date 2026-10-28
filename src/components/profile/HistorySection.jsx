@@ -1,14 +1,19 @@
-import { useState } from "react";
-import interviewReportMock from "../../mocks/interviewReportMock";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getCoverLetters } from "../../services/coverLetterService";
+import { getSessions } from "../../services/interviewService";
 import Carousel from "../common/Carousel";
 
-export default function HistorySection({ histories }) {
+export default function HistorySection() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("coverLetter");
+  const [coverLetters, setCoverLetters] = useState([]);
+  const [interviews, setInterviews] = useState([]);
 
-  const coverLetters = histories?.coverLetters || [];
-
-  // profile API 미연결이므로 더미 데이터 직접 사용
-  const interviews = interviewReportMock;
+  useEffect(() => {
+    getCoverLetters().then(setCoverLetters).catch(console.error);
+    getSessions().then(setInterviews).catch(console.error);
+  }, []);
 
   return (
     <section className="section">
@@ -61,59 +66,54 @@ export default function HistorySection({ histories }) {
         </button>
       </div>
 
-      {tab ===
-      "coverLetter" ? (
-        coverLetters.length >
-        0 ? (
-          coverLetters.map(
-            (item) => (
-              <div
-                key={
-                  item.coverLetterId
-                }
-                className="repeat-card"
-              >
-                <strong>
-                  {
-                    item.companyName
-                  }
-                </strong>
-
-                <div>
-                  {
-                    item.createdAt
-                  }
-                </div>
+      {tab === "coverLetter" ? (
+        coverLetters.length > 0 ? (
+          coverLetters.map((item) => (
+            <div
+              key={item.coverLetterId}
+              className="repeat-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate(`/cover-letters/${item.coverLetterId}`)}
+            >
+              <strong>{item.companyName}</strong>
+              <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>
+                {item.jobTitle}
               </div>
-            )
-          )
+              <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
+                {item.createdAt
+                  ? new Date(item.createdAt).toLocaleDateString("ko-KR")
+                  : ""}
+              </div>
+            </div>
+          ))
         ) : (
-          <div className="repeat-card">
-            생성된
-            자소서가
-            없습니다.
-          </div>
+          <div className="repeat-card">생성된 자소서가 없습니다.</div>
         )
       ) : interviews.length > 0 ? (
         <Carousel
           items={interviews}
           renderItem={(item) => (
-            <div className="repeat-card" style={{ marginBottom: 0 }}>
-              <strong style={{ fontSize: "18px" }}>{item.company_name}</strong>
+            <div
+              className="repeat-card"
+              style={{ marginBottom: 0, cursor: "pointer" }}
+              onClick={() => navigate(`/interview/report/${item.interviewSessionId}`)}
+            >
+              <strong style={{ fontSize: "18px" }}>{item.companyName}</strong>
               <div style={{ marginTop: "4px", fontSize: "13px", color: "#64748b" }}>
-                {item.job_name}
+                {item.jobName}
               </div>
-              <div style={{ marginTop: "8px", fontSize: "13px", color: "#64748b" }}>
-                종합 점수:{" "}
-                <strong style={{ color: "#2563eb", fontSize: "20px" }}>
-                  {item.scores.overall_score.toFixed(2)}점
-                </strong>
-              </div>
+              {item.totalScore != null && (
+                <div style={{ marginTop: "8px", fontSize: "13px", color: "#64748b" }}>
+                  종합 점수:{" "}
+                  <strong style={{ color: "#2563eb", fontSize: "20px" }}>
+                    {Number(item.totalScore).toFixed(1)}점
+                  </strong>
+                </div>
+              )}
               <div style={{ marginTop: "4px", fontSize: "12px", color: "#94a3b8" }}>
-                📅 {item.interview_summary?.interview_date?.replace("T", " ").slice(0, 16)}
-              </div>
-              <div style={{ marginTop: "4px", fontSize: "12px", color: "#94a3b8" }}>
-                난이도 {item.interview_summary?.difficulty} · {item.interview_summary?.interviewer_type}
+                📅 {item.startTime
+                  ? new Date(item.startTime).toLocaleDateString("ko-KR")
+                  : ""}
               </div>
             </div>
           )}

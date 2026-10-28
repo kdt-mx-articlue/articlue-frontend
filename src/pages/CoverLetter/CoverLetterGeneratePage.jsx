@@ -97,15 +97,18 @@ export default function CoverLetterGeneratePage() {
     if (questions.length === 0) return;
     setStep("generating");
     try {
-      await generateCoverLetter({
+      const result = await generateCoverLetter({
         jobPostingId,
         companyName,
         jobTitle,
         jobDescription,
         questions,
       });
-      // 생성 완료 → 이력서 페이지로 이동 (자소서 항목 확인)
-      navigate("/resume");
+      // 생성 완료 → 생성된 자소서 상세 페이지로 이동
+      navigate(result?.coverLetterId
+        ? `/cover-letters/${result.coverLetterId}`
+        : "/cover-letters"
+      );
     } catch (e) {
       alert("자소서 생성에 실패했습니다: " + e.message);
       setStep("editing");

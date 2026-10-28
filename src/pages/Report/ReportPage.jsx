@@ -20,6 +20,14 @@ const METRIC_META = {
   culture_fit:       { label: "문화 적합도",  icon: <HiUserGroup /> },
 };
 
+const METRIC_ORDER = ["business_fit", "tech_stack_fit", "requirement_fit", "action_result_fit", "culture_fit"];
+
+function sortMetrics(metrics) {
+  return Object.entries(metrics ?? {}).sort(
+    ([a], [b]) => METRIC_ORDER.indexOf(a) - METRIC_ORDER.indexOf(b)
+  );
+}
+
 function scoreColor(s) {
   if (s >= 90) return "text-emerald-500";
   if (s >= 75) return "text-blue-500";
@@ -290,7 +298,7 @@ export default function ReportPage() {
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-[28px] border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-8">
           <h2 className="mb-6 text-xl font-black text-slate-900 dark:text-white">1차 역량 상세</h2>
-          {Object.entries(resumeAnalysis?.metrics ?? {}).map(([k, v]) => (
+          {sortMetrics(resumeAnalysis?.metrics).map(([k, v]) => (
             <MetricCard key={k} metricKey={k} data={v} />
           ))}
         </div>
@@ -298,7 +306,7 @@ export default function ReportPage() {
         <div className="rounded-[28px] border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-8">
           <h2 className="mb-6 text-xl font-black text-slate-900 dark:text-white">2차 역량 상세</h2>
           {finalAnalysis
-            ? Object.entries(finalAnalysis.metrics).map(([k, v]) => (
+            ? sortMetrics(finalAnalysis.metrics).map(([k, v]) => (
                 <MetricCard key={k} metricKey={k} data={v} />
               ))
             : <EmptyFinalCard navigate={navigate} jobPostingId={jobPostingId} />
@@ -369,7 +377,7 @@ export default function ReportPage() {
       {/* ══ 하단 버튼 ══ */}
       <div className="flex gap-3">
         <button
-          onClick={() => navigate(`/interview/setup/${jobPostingId}`)}
+          onClick={() => navigate(`/interview/setup?company=${encodeURIComponent(companyName ?? "")}&job=${encodeURIComponent(jobName ?? "")}`)}
           className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 py-4 font-black text-white transition-colors text-[15px]"
         >
           면접 보러 가기
