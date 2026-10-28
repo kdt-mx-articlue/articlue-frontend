@@ -53,6 +53,7 @@ import StartPage from "../pages/Start/StartPage";
 import CoverLetterListPage from "../pages/CoverLetter/CoverLetterPage";
 import CoverLetterDetailPage from "../pages/CoverLetter/CoverLetterDetailPage";
 import CoverLetterGeneratePage from "../pages/CoverLetter/CoverLetterGeneratePage";
+import AdminBatchPage from "../pages/Admin/AdminBatchPage";
 
 const router = createBrowserRouter([
   /*
@@ -98,6 +99,11 @@ const router = createBrowserRouter([
   {
     path: "/demo-setup",
     element: <DemoSetupPage />,
+  },
+  {
+    // 관리자 배치 관리 — ADMIN_TOKEN 으로 인증 (메뉴 노출 없음)
+    path: "/admin/batch",
+    element: <AdminBatchPage />,
   },
 
 
