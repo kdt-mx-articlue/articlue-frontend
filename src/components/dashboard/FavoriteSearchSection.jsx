@@ -91,9 +91,14 @@ export default function FavoriteSearchSection({ onFavorite, favoriteKeys, scoreM
                       <p className="text-[12px] text-slate-500">
                         {item.jobName} · {item.careerLevel ?? item.career_level}
                       </p>
-                      {score != null && (
+                      {score != null ? (
                         <p className="mt-0.5 text-[11px] font-semibold text-blue-500">
                           1차 직무 매칭률 {Number(score).toFixed(1)}%
+                        </p>
+                      ) : (
+                        // 이력서 분석 이후 새로 수집된 공고 등 → 이력서를 다시 분석하면 반영
+                        <p className="mt-0.5 text-[11px] font-semibold text-slate-400">
+                          분석 전
                         </p>
                       )}
                     </div>
