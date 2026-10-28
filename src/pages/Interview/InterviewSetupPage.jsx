@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import PageHero from "../../components/common/PageHero";
-import { searchJobPostings } from "../../services/jobPostingService";
+import { getJobPostingDetail, searchJobPostings } from "../../services/jobPostingService";
+import { getInterviewQuota } from "../../services/interviewService";
 
 export default function InterviewSetupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { jobPostingId: jobPostingIdParam } = useParams();
 
   // 기업 검색
   const [companyQuery, setCompanyQuery] = useState("");
@@ -27,10 +29,44 @@ export default function InterviewSetupPage() {
   const [questionCount, setQuestionCount] = useState(5);
   const [interviewMode, setInterviewMode] = useState("CHATBOT");
 
-  // 쿼리 파라미터 자동 선택 (?company=XXX&job=YYY)
+  // 이용 한도 (서버 기준) — 체험 계정은 음성(TTS) 면접 불가
+  const [quota, setQuota] = useState(null);
+  const voiceAllowed = quota?.voiceAllowed ?? true;
+
   useEffect(() => {
+    getInterviewQuota().then((data) => {
+      setQuota(data);
+      if (data && !data.voiceAllowed) setInterviewMode("CHATBOT");
+    });
+  }, []);
+
+  // 자동 선택
+  //  1) 공고 ID (/interview/setup/:jobPostingId 또는 ?jobPostingId=) → 공고에서 기업·직무 채움 (가장 정확)
+  //  2) ?company=XXX&job=YYY → 기업명으로 검색해 직무 매칭
+  useEffect(() => {
+    const idFromUrl = jobPostingIdParam ?? searchParams.get("jobPostingId");
     const company = searchParams.get("company");
     const job = searchParams.get("job");
+
+    if (idFromUrl) {
+      let cancelled = false;
+      getJobPostingDetail(idFromUrl).then((posting) => {
+        if (cancelled || !posting?.companyName) return;
+        setSearchResults([posting]);
+        setSelectedCompany(posting.companyName);
+        setCompanyQuery(posting.companyName);
+        setSelectedJobName(posting.jobName);
+        setSelectedJobPostingId(posting.jobPostingId);
+        // 같은 기업의 다른 직무도 고를 수 있게 기업명으로 목록 보강
+        searchJobPostings(posting.companyName, 50).then((items) => {
+          if (cancelled) return;
+          const others = items.filter((p) => p.jobPostingId !== posting.jobPostingId);
+          setSearchResults([posting, ...others]);
+        });
+      });
+      return () => { cancelled = true; };
+    }
+
     if (company) {
       setSelectedCompany(company);
       setCompanyQuery(company);
@@ -46,7 +82,8 @@ export default function InterviewSetupPage() {
         }
       });
     }
-  }, [searchParams]);
+    return undefined;
+  }, [searchParams, jobPostingIdParam]);
 
   // debounce API 검색
   const handleCompanyInput = useCallback((value) => {
@@ -152,6 +189,14 @@ export default function InterviewSetupPage() {
       return;
     }
 
+    // 화면 안내용 사전 확인 (실제 제한은 면접 시작 API 가 검사)
+    if (quota && quota.remaining <= 0) {
+      alert(quota.isDemo
+        ? `체험 계정은 모의 면접을 ${quota.limit}회까지 이용할 수 있습니다. 회원가입 후 이어서 이용해 주세요.`
+        : `무료 모의 면접 ${quota.limit}회를 모두 사용했습니다.`);
+      return;
+    }
+
     const setupData = {
       company_name:      selectedCompany,
       job_name:          selectedJobName,
@@ -201,7 +246,7 @@ export default function InterviewSetupPage() {
               onChange={(e) => handleCompanyInput(e.target.value)}
               onFocus={() => setCompanyOpen(true)}
               placeholder="기업명을 검색하세요"
-              className="w-full rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4 outline-none focus:border-blue-500"
             />
             {searching && (
               <div className="absolute right-4 top-[54px] text-[12px] text-slate-400">
@@ -235,7 +280,7 @@ export default function InterviewSetupPage() {
               value={selectedJobName}
               disabled={!selectedCompany}
               onChange={(e) => handleSelectJob(e.target.value)}
-              className="w-full rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-400"
             >
               <option value="">
                 {selectedCompany ? "직무 선택" : "기업을 먼저 선택하세요"}
@@ -252,7 +297,7 @@ export default function InterviewSetupPage() {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="w-full rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
+              className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
             >
               <option>하</option>
               <option>중</option>
@@ -266,7 +311,7 @@ export default function InterviewSetupPage() {
             <select
               value={interviewerType}
               onChange={(e) => setInterviewerType(e.target.value)}
-              className="w-full rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
+              className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
             >
               <option>친절형</option>
               <option>실무형</option>
@@ -280,7 +325,7 @@ export default function InterviewSetupPage() {
             <select
               value={questionCount}
               onChange={(e) => setQuestionCount(Number(e.target.value))}
-              className="w-full rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
+              className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
             >
               <option value={3}>3문항</option>
               <option value={5}>5문항</option>
@@ -294,11 +339,16 @@ export default function InterviewSetupPage() {
             <select
               value={interviewMode}
               onChange={(e) => setInterviewMode(e.target.value)}
-              className="w-full rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
+              className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
             >
               <option value="CHATBOT">CHATBOT</option>
-              <option value="TTS">TTS</option>
+              <option value="TTS" disabled={!voiceAllowed}>
+                {voiceAllowed ? "TTS" : "TTS (회원가입 후 이용)"}
+              </option>
             </select>
+            {!voiceAllowed && (
+              <p className="mt-2 text-[12px] text-slate-400">체험 계정은 텍스트(챗봇) 면접만 가능합니다.</p>
+            )}
           </div>
 
         </div>
@@ -310,9 +360,16 @@ export default function InterviewSetupPage() {
           </div>
         )}
 
+        {quota && (
+          <div className="mt-6 text-[13px] text-slate-500 dark:text-slate-400">
+            모의 면접 잔여 <strong className={quota.remaining > 0 ? "text-blue-600" : "text-rose-500"}>{quota.remaining}회</strong>
+            {" "}/ {quota.limit}회{quota.isDemo ? " (체험 계정)" : ""}
+          </div>
+        )}
+
         <button
           onClick={handleStartInterview}
-          className="mt-10 w-full rounded-xl bg-blue-600 hover:bg-blue-700 py-4 text-lg font-black text-white transition-colors"
+          className="mt-4 w-full rounded-xl bg-blue-600 hover:bg-blue-700 py-4 text-lg font-black text-white transition-colors"
         >
           모의 면접 시작
         </button>

@@ -5,6 +5,7 @@ import {
   startInterview,
   submitVoiceAnswer,
   finishInterview,
+  getStartErrorMessage,
 } from "../../services/interviewService";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
 import ArtiCharacter from "../../components/Arti/ArtiCharacter";
@@ -170,7 +171,7 @@ export default function InterviewTTSPage() {
       }
     } catch (err) {
       console.error("면접 시작 실패:", err);
-      setInitError("서버 연결에 실패했습니다.");
+      setInitError(getStartErrorMessage(err, "서버 연결에 실패했습니다."));
     } finally {
       setLoading(false);
     }

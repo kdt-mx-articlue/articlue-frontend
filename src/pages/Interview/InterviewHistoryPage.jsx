@@ -49,6 +49,54 @@ const FEEDBACK_META = {
 };
 
 /* ── 통계 아이템 ── */
+/* 답변 판정 (AI 채점 answerStatus / 최종 리포트 verdict) */
+const VERDICT_STYLE = {
+  VALID:   { label: "적절한 답변",       className: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" },
+  PARTIAL: { label: "핵심 일부 누락",    className: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" },
+  WRONG:   { label: "의도 불일치·오류",  className: "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400" },
+  EVASIVE: { label: "회피·모름",         className: "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300" },
+  INVALID: { label: "평가 불가",         className: "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300" },
+  ABUSIVE: { label: "부적절한 답변",     className: "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400" },
+};
+
+/* 질문별 피드백 — 판정·점수·잘한 점·문제점·모범 답안 방향·키워드 (이전 면접은 데이터 없음) */
+function QuestionFeedback({ status, score, feedback }) {
+  const verdict = feedback?.verdict ?? status;
+  const style = VERDICT_STYLE[verdict];
+  const problems = feedback?.problems || feedback?.turnFeedback;
+  const hasDetail = problems || feedback?.strengths || feedback?.modelAnswer || feedback?.keywords?.length;
+
+  if (!style && score == null && !hasDetail) return null;
+
+  return (
+    <div className="mt-3 ml-11 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-[13px] leading-6">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[12px] font-black text-slate-700 dark:text-slate-200">답변 피드백</span>
+        {style && <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${style.className}`}>{style.label}</span>}
+        {score != null && <span className="text-[12px] font-bold text-slate-400">{Number(score).toFixed(0)}점</span>}
+      </div>
+      {feedback?.strengths && (
+        <p className="text-slate-600 dark:text-slate-300"><span className="font-bold text-emerald-600 dark:text-emerald-400">잘한 점 </span>{feedback.strengths}</p>
+      )}
+      {problems && (
+        <p className="mt-1 text-slate-600 dark:text-slate-300"><span className="font-bold text-rose-500">문제점 </span>{problems}</p>
+      )}
+      {feedback?.modelAnswer && (
+        <div className="mt-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 px-3 py-2 text-slate-700 dark:text-slate-200">
+          <span className="font-bold text-blue-600 dark:text-blue-400">이렇게 답해 보세요 </span>{feedback.modelAnswer}
+        </div>
+      )}
+      {feedback?.keywords?.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {feedback.keywords.map((keyword) => (
+            <span key={keyword} className="rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[11px] text-slate-500 dark:text-slate-300">#{keyword}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StatItem({ icon, label, value, sub }) {
   return (
     <div className="flex flex-col gap-1 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-4">
@@ -130,6 +178,11 @@ export default function InterviewHistoryPage() {
 
         <h1 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">
           {report.companyName ?? report.company_name}
+          {report.isSample === "Y" && (
+            <span className="ml-3 align-middle rounded-full bg-violet-50 dark:bg-violet-900/30 px-2.5 py-0.5 text-[12px] font-bold text-violet-500 dark:text-violet-300">
+              체험용 샘플 기록
+            </span>
+          )}
         </h1>
         <p className="mt-1.5 text-base text-slate-500 dark:text-slate-400 font-medium">
           {report.jobName ?? report.job_name}
@@ -235,6 +288,15 @@ export default function InterviewHistoryPage() {
                                 </div>
                               </div>
                             </div>
+                          )}
+
+                          {/* 질문별 피드백 */}
+                          {answerContent && (
+                            <QuestionFeedback
+                              status={item.answerStatus}
+                              score={item.qaScore}
+                              feedback={item.qaFeedback}
+                            />
                           )}
                         </div>
                       );
