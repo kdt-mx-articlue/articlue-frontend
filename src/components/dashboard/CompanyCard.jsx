@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiBookmark, HiOutlineBookmark } from "react-icons/hi";
 import { isFavorite, toggleFavorite } from "../../services/favoriteService";
+import CareerMismatchBadge from "../common/CareerMismatchBadge";
 
 /**
  * 통합 기업 카드
@@ -123,6 +124,11 @@ export default function CompanyCard({ company, onFavoriteChange, onGenerateCover
             <p className="mt-1 text-[20px] font-black text-slate-300">분석 전</p>
             <div className="mt-3 h-2 rounded-full bg-slate-100" />
           </>
+        )}
+        {company.careerCheck?.mismatch && (
+          <div className="mt-2">
+            <CareerMismatchBadge careerCheck={company.careerCheck} />
+          </div>
         )}
       </div>
 

@@ -178,6 +178,11 @@ export default function InterviewHistoryPage() {
 
         <h1 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">
           {report.companyName ?? report.company_name}
+          {report.isSample === "Y" && (
+            <span className="ml-3 align-middle rounded-full bg-violet-50 dark:bg-violet-900/30 px-2.5 py-0.5 text-[12px] font-bold text-violet-500 dark:text-violet-300">
+              체험용 샘플 기록
+            </span>
+          )}
         </h1>
         <p className="mt-1.5 text-base text-slate-500 dark:text-slate-400 font-medium">
           {report.jobName ?? report.job_name}

@@ -10,6 +10,7 @@ import {
 
 import ReportRadarChart from "../../components/report/ReportRadarChart";
 import { getReportData, requestDetailAnalysis } from "../../services/reportService";
+import CareerMismatchBadge from "../../components/common/CareerMismatchBadge";
 
 /* ── 메타 ── */
 const METRIC_META = {
@@ -218,6 +219,7 @@ export default function ReportPage() {
               마감 {deadlineDate}
             </span>
           )}
+          <CareerMismatchBadge careerCheck={resumeAnalysis?.careerCheck} />
         </div>
 
         <div className="flex items-start justify-between gap-4 flex-wrap">

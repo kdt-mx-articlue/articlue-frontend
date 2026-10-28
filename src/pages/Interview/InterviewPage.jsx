@@ -168,7 +168,12 @@ export default function InterviewPage() {
                   <p className="mb-1 text-[12px] font-medium text-slate-400">
                     {modeLabel(item.interviewType)} · {item.interviewLevel ?? "-"}난이도 · AI 면접관
                   </p>
-                  <h3 className="text-[22px] font-black text-slate-900 leading-tight">{item.companyName ?? "-"}</h3>
+                  <h3 className="text-[22px] font-black text-slate-900 leading-tight">
+                    {item.companyName ?? "-"}
+                    {item.isSample === "Y" && (
+                      <span className="ml-2 align-middle rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-bold text-violet-500">샘플</span>
+                    )}
+                  </h3>
                   <p className="mt-1 text-[14px] text-slate-500">{item.jobName ?? "-"}</p>
                   <p className="mt-2 flex items-center gap-1 text-[12px] text-slate-400">
                     <span>📅</span>
