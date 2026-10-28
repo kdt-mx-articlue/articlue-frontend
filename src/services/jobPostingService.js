@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import api from "../api/axios.js";
 
 // CSV 파싱 결과 캐시 (최초 1회만 로드)
 let cachedData = null;
@@ -45,28 +46,72 @@ async function loadCSV() {
   });
 }
 
-/**
- * 키워드로 채용공고 검색 (기업명 / 직무명 / 기술스택)
- */
-export async function searchJobPostings(keyword = "", size = 50) {
-  const data = await loadCSV();
-  if (!keyword.trim()) return [];
+// 주간 수집으로 추가된 공고는 CSV 에 없으므로 백엔드 API 로 조회 (결과 캐시)
+const apiDetailCache = new Map();
 
-  const q = keyword.trim().toLowerCase();
-  return data
-    .filter(
-      (item) =>
-        item.companyName.toLowerCase().includes(q) ||
-        item.jobName.toLowerCase().includes(q) ||
-        item.techStacks.toLowerCase().includes(q)
-    )
-    .slice(0, size);
+function fromApiItem(item) {
+  return {
+    jobPostingId:     Number(item.jobPostingId),
+    companyName:      item.companyName ?? "",
+    jobName:          item.postingTitle || item.jobName || "",
+    careerLevel:      item.careerCondition ?? "",
+    deadline:         item.deadlineDate ? String(item.deadlineDate).slice(0, 10) : "",
+    applyUrl:         item.originalUrl ?? "",
+    techStacks:       "",
+    requirements:     item.qualification ?? "",
+    responsibilities: item.mainTask ?? "",
+  };
+}
+
+async function searchFromApi(keyword, size) {
+  try {
+    const res = await api.get("/job-postings", { params: { keyword, size } });
+    return (res.data?.data?.items ?? []).map(fromApiItem);
+  } catch {
+    return [];
+  }
 }
 
 /**
- * ID로 채용공고 상세 조회
+ * 키워드로 채용공고 검색 (기업명 / 직무명 / 기술스택)
+ * - CSV(초기 공고, 기술스택 검색 가능) + 백엔드 API(수집 공고 포함) 결과 병합
+ */
+export async function searchJobPostings(keyword = "", size = 50) {
+  if (!keyword.trim()) return [];
+
+  const q = keyword.trim().toLowerCase();
+  const [data, apiItems] = await Promise.all([loadCSV(), searchFromApi(keyword.trim(), size)]);
+
+  const csvItems = data.filter(
+    (item) =>
+      item.companyName.toLowerCase().includes(q) ||
+      item.jobName.toLowerCase().includes(q) ||
+      item.techStacks.toLowerCase().includes(q)
+  );
+
+  const seen = new Set(csvItems.map((item) => item.jobPostingId));
+  const merged = [...csvItems, ...apiItems.filter((item) => !seen.has(item.jobPostingId))];
+
+  return merged.slice(0, size);
+}
+
+/**
+ * ID로 채용공고 상세 조회 (CSV 우선, 없으면 백엔드 API)
  */
 export async function getJobPostingDetail(jobPostingId) {
+  const id = Number(jobPostingId);
   const data = await loadCSV();
-  return data.find((item) => item.jobPostingId === Number(jobPostingId)) ?? null;
+  const fromCsv = data.find((item) => item.jobPostingId === id);
+
+  if (fromCsv) return fromCsv;
+  if (apiDetailCache.has(id)) return apiDetailCache.get(id);
+
+  try {
+    const res = await api.get(`/job-postings/${id}`);
+    const detail = res.data?.data ? fromApiItem(res.data.data) : null;
+    apiDetailCache.set(id, detail);
+    return detail;
+  } catch {
+    return null;
+  }
 }
