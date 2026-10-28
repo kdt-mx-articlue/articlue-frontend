@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import loadingVideo from "../../assets/videos/Arti_Loading.mp4";
+const mediaBase = (import.meta.env.VITE_MEDIA_BASE_URL || "https://media.donghwan.cloud")
+  .replace(/\/$/, "");
+const loadingVideo = `${mediaBase}/articlue/Arti_Loading.mp4`;
 
 const LABELS = ["로딩중", "분석중"];
 
