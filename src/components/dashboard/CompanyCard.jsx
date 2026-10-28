@@ -40,6 +40,11 @@ export default function CompanyCard({ company, onFavoriteChange, onGenerateCover
   }
 
   function goInterview() {
+    // 공고 ID 가 있으면 ID 로 (기업·직무 자동 선택), 없으면 이름으로 검색
+    if (jobPostingId) {
+      navigate(`/interview/setup/${jobPostingId}`);
+      return;
+    }
     const params = new URLSearchParams({ company: companyName, job: jobName });
     navigate(`/interview/setup?${params.toString()}`);
   }

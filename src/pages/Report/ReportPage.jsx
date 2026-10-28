@@ -377,7 +377,7 @@ export default function ReportPage() {
       {/* ══ 하단 버튼 ══ */}
       <div className="flex gap-3">
         <button
-          onClick={() => navigate(`/interview/setup?company=${encodeURIComponent(companyName ?? "")}&job=${encodeURIComponent(jobName ?? "")}`)}
+          onClick={() => navigate(`/interview/setup/${jobPostingId}`)}
           className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 py-4 font-black text-white transition-colors text-[15px]"
         >
           면접 보러 가기

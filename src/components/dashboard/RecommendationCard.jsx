@@ -149,7 +149,7 @@ export default function RecommendationCard({
           <button
             onClick={() =>
               navigate(
-                `/interview/${company.job_posting_id}`
+                `/interview/setup/${company.job_posting_id}`
               )
             }
             className="
