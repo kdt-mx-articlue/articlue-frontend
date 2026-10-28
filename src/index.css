@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* dark: 유틸리티를 OS 설정이 아니라 앱 다크모드 토글(html.dark)에 맞춤
+   (Tailwind v4 기본값은 prefers-color-scheme → 앱 라이트 + OS 다크(또는 반대)일 때 흰 바탕에 흰 글씨) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 * {
   box-sizing: border-box;
 }
