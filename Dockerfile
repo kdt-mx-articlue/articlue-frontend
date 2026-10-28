@@ -11,6 +11,8 @@ COPY . .
 # Docker 빌드 시 기본값 /api/ (nginx 프록시 경유)
 ARG VITE_API_BASE_URL=/api/
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ARG VITE_MEDIA_BASE_URL=""
+ENV VITE_MEDIA_BASE_URL=$VITE_MEDIA_BASE_URL
 
 # 소셜 로그인 공개 키 (빌드 시점에 번들에 포함됨 — 비밀값 아님)
 ARG VITE_KAKAO_JS_KEY=
