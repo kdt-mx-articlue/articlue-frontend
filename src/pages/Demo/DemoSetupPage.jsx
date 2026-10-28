@@ -1,5 +1,8 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useResumeStore } from "../../store/resumeStore";
+import { isAuthenticated } from "../../utils/auth";
+import { createDemoSession } from "../../services/demoSession";
 
 /* ───────────────────────────────────────────────────────────
    역할별 이력서 프리셋 (제공 데이터 기준)
@@ -13,7 +16,7 @@ const PRESETS = {
     resumeId: null,
     resumeInfo: {
       resumeTitle: "RAG와 LLM 기반 서비스 구현 경험을 갖춘 AI 백엔드 개발자 이력서",
-      desiredJob: "AI 개발자 / AI 백엔드 개발자 / LLM 서비스 개발자",
+      desiredJob: "AI 엔지니어",
       introduction:
         "Python, FastAPI, LangChain, RAG, Vector DB를 활용해 문서 기반 질의응답과 AI 분석 서비스를 구현한 AI 개발자입니다.",
       resumeStatus: "DRAFT",
@@ -23,24 +26,25 @@ const PRESETS = {
     techStack: {
       languages: ["Python", "JavaScript", "SQL"],
       techs: [
-        { techCategoryCode: "langchain", techName: "LangChain" },
-        { techCategoryCode: "langgraph", techName: "LangGraph" },
-        { techCategoryCode: "openai", techName: "OpenAI API" },
-        { techCategoryCode: "huggingface", techName: "Hugging Face" },
-        { techCategoryCode: "sklearn", techName: "Scikit-learn" },
-        { techCategoryCode: "pandas", techName: "Pandas/NumPy" },
-        { techCategoryCode: "fastapi", techName: "FastAPI" },
-        { techCategoryCode: "chromadb", techName: "ChromaDB" },
-        { techCategoryCode: "faiss", techName: "FAISS" },
-        { techCategoryCode: "docker", techName: "Docker" },
+        { techCategoryCode: "T102009", techName: "LangChain" },
+        { techCategoryCode: "T102046", techName: "LangGraph" },
+        { techCategoryCode: "T102047", techName: "OpenAI API" },
+        { techCategoryCode: "T102048", techName: "Hugging Face" },
+        { techCategoryCode: "T102007", techName: "Scikit-Learn" },
+        { techCategoryCode: "T102049", techName: "Pandas" },
+        { techCategoryCode: "T102050", techName: "NumPy" },
+        { techCategoryCode: "T102001", techName: "FastAPI" },
+        { techCategoryCode: "T103007", techName: "ChromaDB" },
+        { techCategoryCode: "T103008", techName: "FAISS" },
+        { techCategoryCode: "T104002", techName: "Docker" },
       ],
     },
     education: {
       educationType: "university",
       highschool: {
         educationId: null, isGed: false, schoolType: "고등학교",
-        schoolName: "", track: "", major: "", graduationStatus: "졸업",
-        gpa: "", startYm: "", endYm: "",
+        schoolName: "○○고등학교", track: "이과", major: "", graduationStatus: "졸업",
+        gpa: "", startYm: "2017-03", endYm: "2020-02",
       },
       universities: [
         {
@@ -48,7 +52,7 @@ const PRESETS = {
           schoolType: "대학교",
           schoolName: "광주○○대학교",
           major: "인공지능융합학과",
-          graduationStatus: "졸업예정",
+          graduationStatus: "졸업",
           gpa: "",
           gpaScale: "4.5",
           startYm: "2020-03",
@@ -102,7 +106,7 @@ const PRESETS = {
           questionOrder: 2,
           subTitle: "검색 품질과 답변 품질을 함께 고민하는 AI 개발자가 되고 싶습니다.",
           content:
-            "RAG 기반 서비스를 구현하면서 사용자의 질문에 좋은 답변을 제공하기 위해서는 LLM뿐만 아니라 검색 품질이 중요하다는 것을 배웠습니다. 문서를 어떤 기준으로 나눌지, 어떤 메타데이터를 함께 저장할지, 어떤 chunk를 검색 결과로 선택할지에 따라 최종 답변의 품질이 달라졌습니다.\n\n프로젝트에서는 이력서와 채용 공고를 벡터화하여 유사도를 계산했습니다. 처음에는 단순히 문장 임베딩 결과만 사용했지만, 기술스택이나 직무 키워드가 정확히 반영되지 않는 문제가 있었습니다. 이후 기술명, 직무명, 프로젝트명을 별도 키워드로 추출하고 검색 조건에 반영하여 더 관련성 높은 문서를 가져오도록 개선했습니다.\n\n저는 앞으로도 AI 모델을 사용하는 데 그치지 않고, 데이터 흐름과 검색 구조, 백엔드 연동까지 함께 고려하는 AI 개발자로 성장하고 싶습니다.",
+            "RAG 기반 서비스를 구현하면서 사용자의 질문에 좋은 답변을 제공하기 위해서는 LLM뿐만 아니라 검색 품질이 중요하다는 것을 배웠습니다. 문서를 어떤 기준으로 나눌지, 어떤 메타데이터를 함께 저장할지, 어떤 chunk를 검색 결과로 선택할지에 따라 최종 답변의 품질이 달라졌습니다.\n\n프로젝트에서는 이력서와 채용 공고를 벡터화하여 유사도를 계산했습니다. 처음에는 단순히 문장 임베딩 결과만 사용했지만, 기술스택이나 직무 키워드가 정확히 반영되지 않는 문제가 있었습니다. 이후 기술명, 직무명, 프로젝트명을 별도 키워드로 추출하고 검색 조건에 반영하여 더 관련성 높은 문서를 가져오도록 개선했습니다.\n\n또한 검색 구조를 바꿀 때마다 실제로 결과가 좋아졌는지 확인하기 위해 샘플 이력서 10건을 기준으로 상위 5개 추천 공고를 비교하는 평가표를 만들었습니다. 키워드 가중치를 적용한 뒤에는 직무와 관련 없는 공고가 상위에 노출되는 경우가 눈에 띄게 줄었고, 이 과정에서 감으로 튜닝하기보다 기준을 정하고 결과를 측정하는 습관이 중요하다는 것을 배웠습니다.\n\n저는 앞으로도 AI 모델을 사용하는 데 그치지 않고, 데이터 흐름과 검색 구조, 백엔드 연동까지 함께 고려하는 AI 개발자로 성장하고 싶습니다.",
         },
       ],
     },
@@ -111,7 +115,7 @@ const PRESETS = {
       { certificateId: null, certificateName: "SQLD", acquiredYm: "2025-11", issuer: "한국데이터산업진흥원" },
     ],
     portfolios: [],
-    github: { connected: false, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
+    github: { connected: false, demoMode: true, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
   },
 
   /* ── 프론트엔드 개발자 ── */
@@ -119,7 +123,7 @@ const PRESETS = {
     resumeId: null,
     resumeInfo: {
       resumeTitle: "사용자 흐름과 API 연동을 고려하는 React 프론트엔드 개발자 이력서",
-      desiredJob: "프론트엔드 개발자 / React 개발자",
+      desiredJob: "프론트엔드 개발자",
       introduction:
         "React, TypeScript, 상태 관리, REST API 연동 경험을 바탕으로 사용자 중심의 웹 화면을 구현하는 프론트엔드 개발자입니다.",
       resumeStatus: "DRAFT",
@@ -129,23 +133,23 @@ const PRESETS = {
     techStack: {
       languages: ["JavaScript", "TypeScript", "HTML", "CSS"],
       techs: [
-        { techCategoryCode: "react", techName: "React" },
-        { techCategoryCode: "vite", techName: "Vite" },
-        { techCategoryCode: "reactrouter", techName: "React Router" },
-        { techCategoryCode: "zustand", techName: "Zustand" },
-        { techCategoryCode: "tanstack", techName: "TanStack Query" },
-        { techCategoryCode: "axios", techName: "Axios" },
-        { techCategoryCode: "tailwind", techName: "Tailwind CSS" },
-        { techCategoryCode: "figma", techName: "Figma" },
-        { techCategoryCode: "git", techName: "Git" },
+        { techCategoryCode: "T102010", techName: "React" },
+        { techCategoryCode: "T102040", techName: "Vite" },
+        { techCategoryCode: "T102041", techName: "React Router" },
+        { techCategoryCode: "T102042", techName: "Zustand" },
+        { techCategoryCode: "T102043", techName: "TanStack Query" },
+        { techCategoryCode: "T102044", techName: "Axios" },
+        { techCategoryCode: "T102045", techName: "Tailwind CSS" },
+        { techCategoryCode: "T105001", techName: "Figma" },
+        { techCategoryCode: "T104022", techName: "Git" },
       ],
     },
     education: {
       educationType: "university",
       highschool: {
         educationId: null, isGed: false, schoolType: "고등학교",
-        schoolName: "", track: "", major: "", graduationStatus: "졸업",
-        gpa: "", startYm: "", endYm: "",
+        schoolName: "○○고등학교", track: "이과", major: "", graduationStatus: "졸업",
+        gpa: "", startYm: "2017-03", endYm: "2020-02",
       },
       universities: [
         {
@@ -153,7 +157,7 @@ const PRESETS = {
           schoolType: "대학교",
           schoolName: "○○대학교",
           major: "소프트웨어학과",
-          graduationStatus: "졸업예정",
+          graduationStatus: "졸업",
           gpa: "",
           gpaScale: "4.5",
           startYm: "2020-03",
@@ -210,7 +214,7 @@ const PRESETS = {
           questionOrder: 1,
           subTitle: "사용자가 막히지 않는 화면을 만드는 개발자가 되고 싶습니다.",
           content:
-            "프론트엔드 개발을 시작했을 때는 디자인과 동일하게 화면을 구현하는 것이 가장 중요하다고 생각했습니다. 하지만 프로젝트를 진행하면서 실제 사용자는 예상하지 못한 입력을 하거나, 네트워크 지연 상황을 겪거나, 빈 데이터 화면을 마주할 수 있다는 점을 알게 되었습니다.\n\n이력서 작성 서비스 프로젝트에서는 입력 항목이 많아 사용자가 어디까지 작성했는지 헷갈릴 수 있었습니다. 이를 해결하기 위해 섹션별 제목과 설명을 명확히 표시하고, 필수 입력값이 누락되었을 때 어떤 항목을 수정해야 하는지 안내 메시지를 제공했습니다. 또한 API 요청 중에는 로딩 상태를 표시하고, 저장이 완료되었을 때는 성공 메시지를 보여주어 사용자가 현재 상태를 이해할 수 있도록 했습니다.\n\n저는 프론트엔드 개발자가 단순히 화면을 만드는 사람이 아니라 사용자의 흐름을 설계하는 사람이라고 생각합니다. 앞으로도 기능 구현뿐만 아니라 사용자가 자연스럽게 서비스를 이용할 수 있는 화면을 만드는 개발자로 성장하고 싶습니다.",
+            "프론트엔드 개발을 시작했을 때는 디자인과 동일하게 화면을 구현하는 것이 가장 중요하다고 생각했습니다. 하지만 프로젝트를 진행하면서 실제 사용자는 예상하지 못한 입력을 하거나, 네트워크 지연 상황을 겪거나, 빈 데이터 화면을 마주할 수 있다는 점을 알게 되었습니다.\n\n이력서 작성 서비스 프로젝트에서는 입력 항목이 많아 사용자가 어디까지 작성했는지 헷갈릴 수 있었습니다. 이를 해결하기 위해 섹션별 제목과 설명을 명확히 표시하고, 필수 입력값이 누락되었을 때 어떤 항목을 수정해야 하는지 안내 메시지를 제공했습니다. 또한 API 요청 중에는 로딩 상태를 표시하고, 저장이 완료되었을 때는 성공 메시지를 보여주어 사용자가 현재 상태를 이해할 수 있도록 했습니다.\n\n이후 팀원들과 실제 사용 흐름을 점검하면서 작성 중이던 내용이 새로고침 한 번에 사라지는 문제도 발견했습니다. 이를 막기 위해 입력값을 전역 상태와 로컬 저장소에 임시 저장하고, 페이지를 다시 열었을 때 이어서 작성할 수 있도록 개선했습니다.\n\n저는 프론트엔드 개발자가 단순히 화면을 만드는 사람이 아니라 사용자의 흐름을 설계하는 사람이라고 생각합니다. 앞으로도 기능 구현뿐만 아니라 사용자가 자연스럽게 서비스를 이용할 수 있는 화면을 만드는 개발자로 성장하고 싶습니다.",
         },
         {
           questionOrder: 2,
@@ -225,7 +229,7 @@ const PRESETS = {
       { certificateId: null, certificateName: "정보처리기사 필기 합격", acquiredYm: "2025-08", issuer: "한국산업인력공단" },
     ],
     portfolios: [],
-    github: { connected: false, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
+    github: { connected: false, demoMode: true, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
   },
 
   /* ── 백엔드 개발자 ── */
@@ -233,7 +237,7 @@ const PRESETS = {
     resumeId: null,
     resumeInfo: {
       resumeTitle: "DB 설계와 트랜잭션 처리 경험을 갖춘 Java 백엔드 개발자 이력서",
-      desiredJob: "백엔드 개발자 / Java Spring 백엔드 개발자",
+      desiredJob: "백엔드 개발자",
       introduction:
         "Spring Boot 기반 REST API 개발, 데이터베이스 설계, 트랜잭션 처리, 서버 간 API 연동 경험을 갖춘 백엔드 개발자입니다.",
       resumeStatus: "DRAFT",
@@ -243,24 +247,24 @@ const PRESETS = {
     techStack: {
       languages: ["Java", "JavaScript", "SQL"],
       techs: [
-        { techCategoryCode: "spring", techName: "Spring Boot" },
-        { techCategoryCode: "springmvc", techName: "Spring MVC" },
-        { techCategoryCode: "springsecurity", techName: "Spring Security" },
-        { techCategoryCode: "jpa", techName: "JPA" },
-        { techCategoryCode: "mybatis", techName: "MyBatis" },
-        { techCategoryCode: "oracle", techName: "Oracle" },
-        { techCategoryCode: "mysql", techName: "MySQL" },
-        { techCategoryCode: "redis", techName: "Redis" },
-        { techCategoryCode: "docker", techName: "Docker" },
-        { techCategoryCode: "aws", techName: "AWS EC2" },
+        { techCategoryCode: "T102018", techName: "Spring Boot" },
+        { techCategoryCode: "T102019", techName: "Spring" },
+        { techCategoryCode: "T102051", techName: "Spring Security" },
+        { techCategoryCode: "T102021", techName: "JPA" },
+        { techCategoryCode: "T102020", techName: "MyBatis" },
+        { techCategoryCode: "T103005", techName: "Oracle" },
+        { techCategoryCode: "T103001", techName: "MySQL" },
+        { techCategoryCode: "T103004", techName: "Redis" },
+        { techCategoryCode: "T104002", techName: "Docker" },
+        { techCategoryCode: "T104001", techName: "AWS" },
       ],
     },
     education: {
       educationType: "university",
       highschool: {
         educationId: null, isGed: false, schoolType: "고등학교",
-        schoolName: "", track: "", major: "", graduationStatus: "졸업",
-        gpa: "", startYm: "", endYm: "",
+        schoolName: "○○고등학교", track: "이과", major: "", graduationStatus: "졸업",
+        gpa: "", startYm: "2017-03", endYm: "2020-02",
       },
       universities: [
         {
@@ -268,7 +272,7 @@ const PRESETS = {
           schoolType: "대학교",
           schoolName: "○○대학교",
           major: "컴퓨터공학과",
-          graduationStatus: "졸업예정",
+          graduationStatus: "졸업",
           gpa: "",
           gpaScale: "4.5",
           startYm: "2020-03",
@@ -341,7 +345,7 @@ const PRESETS = {
           questionOrder: 2,
           subTitle: "API 흐름을 명확히 설계하는 개발자가 되겠습니다.",
           content:
-            "프로젝트를 진행하면서 API 명세가 명확하지 않으면 프론트엔드와 백엔드 모두 불필요한 수정이 많아진다는 것을 경험했습니다. 요청값 이름이 바뀌거나 응답 구조가 달라지면 화면 개발에 바로 영향을 주었고, 오류 상황에 대한 응답 형식이 통일되지 않으면 문제 원인을 파악하기 어려웠습니다.\n\n이후 API를 개발할 때는 Swagger와 Postman을 활용해 요청 URL, Method, Request Body, Response Body, Error Response를 먼저 정리했습니다. 또한 성공 응답뿐만 아니라 필수값 누락, 권한 없음, 중복 데이터, 서버 오류 상황까지 응답 형식을 통일하려고 노력했습니다.\n\n저는 좋은 백엔드 API는 기능만 제공하는 것이 아니라 협업자가 예측 가능하게 사용할 수 있어야 한다고 생각합니다. 입사 후에도 서비스 흐름과 도메인을 빠르게 이해하고, 안정적이고 유지보수하기 쉬운 API를 개발하는 백엔드 개발자가 되겠습니다.",
+            "프로젝트를 진행하면서 API 명세가 명확하지 않으면 프론트엔드와 백엔드 모두 불필요한 수정이 많아진다는 것을 경험했습니다. 요청값 이름이 바뀌거나 응답 구조가 달라지면 화면 개발에 바로 영향을 주었고, 오류 상황에 대한 응답 형식이 통일되지 않으면 문제 원인을 파악하기 어려웠습니다.\n\n이후 API를 개발할 때는 Swagger와 Postman을 활용해 요청 URL, Method, Request Body, Response Body, Error Response를 먼저 정리했습니다. 또한 성공 응답뿐만 아니라 필수값 누락, 권한 없음, 중복 데이터, 서버 오류 상황까지 응답 형식을 통일하려고 노력했습니다.\n\n특히 공통 응답 객체와 에러 코드를 정의한 뒤에는 프론트엔드 개발자가 응답 구조를 추측하지 않아도 되었고, 오류가 발생했을 때도 에러 코드만으로 원인을 빠르게 파악할 수 있어 협업 과정의 커뮤니케이션 비용이 크게 줄었습니다.\n\n저는 좋은 백엔드 API는 기능만 제공하는 것이 아니라 협업자가 예측 가능하게 사용할 수 있어야 한다고 생각합니다. 입사 후에도 서비스 흐름과 도메인을 빠르게 이해하고, 안정적이고 유지보수하기 쉬운 API를 개발하는 백엔드 개발자가 되겠습니다.",
         },
       ],
     },
@@ -350,7 +354,7 @@ const PRESETS = {
       { certificateId: null, certificateName: "정보처리기사 필기 합격", acquiredYm: "2025-08", issuer: "한국산업인력공단" },
     ],
     portfolios: [],
-    github: { connected: false, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
+    github: { connected: false, demoMode: true, githubAccountId: null, githubUserId: null, login: "", htmlUrl: "", repositories: [] },
   },
 };
 
@@ -396,13 +400,32 @@ const ROLES = [
 export default function DemoSetupPage() {
   const navigate = useNavigate();
   const setResume = useResumeStore((s) => s.setResume);
+  const resetResume = useResumeStore((s) => s.resetResume);
+  const [loadingKey, setLoadingKey] = useState(null);
+  const [error, setError] = useState("");
 
-  function handleSelect(key) {
-    if (key === "custom") {
-      navigate("/resume");
-      return;
+  async function handleSelect(key) {
+    if (loadingKey) return;
+    setError("");
+
+    // 비로그인 방문자는 체험 계정을 자동으로 만들어 바로 시작
+    if (!isAuthenticated()) {
+      try {
+        setLoadingKey(key);
+        await createDemoSession();
+      } catch (e) {
+        console.error(e);
+        setError("체험 계정을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        setLoadingKey(null);
+        return;
+      }
     }
-    setResume(PRESETS[key]);
+
+    if (key === "custom") {
+      resetResume();
+    } else {
+      setResume(structuredClone(PRESETS[key]));
+    }
     navigate("/resume");
   }
 
@@ -450,9 +473,9 @@ export default function DemoSetupPage() {
         <p style={{ fontSize: "15px", color: "#64748b", lineHeight: 1.8 }}>
           역할을 선택하면 이력서가 자동으로 채워집니다.
           <br />
-          <span style={{ color: "#3b82f6", fontWeight: 700 }}>GitHub 연동</span>과{" "}
-          <span style={{ color: "#3b82f6", fontWeight: 700 }}>포트폴리오</span>는
-          이후 직접 입력해 주세요.
+          <span style={{ color: "#3b82f6", fontWeight: 700 }}>GitHub 연동 없이</span> 바로 저장할 수 있으며,{" "}
+          <span style={{ color: "#3b82f6", fontWeight: 700 }}>GitHub · 포트폴리오</span>는
+          원하면 직접 추가할 수 있습니다.
         </p>
       </div>
 
@@ -471,13 +494,15 @@ export default function DemoSetupPage() {
             key={role.key}
             type="button"
             onClick={() => handleSelect(role.key)}
+            disabled={loadingKey !== null}
             style={{
+              opacity: loadingKey && loadingKey !== role.key ? 0.5 : 1,
               background: "#ffffff",
               border: `2px solid #e2e8f0`,
               borderRadius: "28px",
               padding: "36px 28px 28px",
               textAlign: "left",
-              cursor: "pointer",
+              cursor: loadingKey ? "wait" : "pointer",
               transition: "all 0.2s ease",
               boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
             }}
@@ -562,15 +587,30 @@ export default function DemoSetupPage() {
                 textAlign: "center",
               }}
             >
-              이 역할로 이력서 채우기 →
+              {loadingKey === role.key ? "체험 계정 준비 중..." : "이 역할로 이력서 채우기 →"}
             </div>
           </button>
         ))}
       </div>
 
+      {error && (
+        <p style={{ marginTop: "24px", fontSize: "14px", color: "#dc2626", fontWeight: 700 }}>
+          {error}
+        </p>
+      )}
+
       <p style={{ marginTop: "44px", fontSize: "13px", color: "#94a3b8" }}>
         이력서 저장 후 AI 분석 · 자소서 생성 · 면접 시뮬레이션을 이용할 수 있습니다.
       </p>
+
+      {!isAuthenticated() && (
+        <p style={{ marginTop: "12px", fontSize: "13px", color: "#64748b" }}>
+          회원가입 없이 바로 체험할 수 있습니다. 이미 계정이 있다면{" "}
+          <Link to="/login" style={{ color: "#3b82f6", fontWeight: 700 }}>
+            로그인
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

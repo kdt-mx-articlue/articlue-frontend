@@ -7,8 +7,10 @@ export function validateResume(
      GitHub
   ========================= */
 
+  // 데모 이력서(DemoSetupPage)는 GitHub 연동 없이 저장 허용
   if (
-    !resume.github.connected
+    !resume.github.connected &&
+    !resume.github.demoMode
   ) {
     errors.push(
       "GitHub 연동"
