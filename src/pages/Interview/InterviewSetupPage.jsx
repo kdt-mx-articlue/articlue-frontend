@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import PageHero from "../../components/common/PageHero";
 import { getJobPostingDetail, searchJobPostings } from "../../services/jobPostingService";
+import { getInterviewQuota } from "../../services/interviewService";
 
 export default function InterviewSetupPage() {
   const navigate = useNavigate();
@@ -27,6 +28,17 @@ export default function InterviewSetupPage() {
   const [interviewerType, setInterviewerType] = useState("실무형");
   const [questionCount, setQuestionCount] = useState(5);
   const [interviewMode, setInterviewMode] = useState("CHATBOT");
+
+  // 이용 한도 (서버 기준) — 체험 계정은 음성(TTS) 면접 불가
+  const [quota, setQuota] = useState(null);
+  const voiceAllowed = quota?.voiceAllowed ?? true;
+
+  useEffect(() => {
+    getInterviewQuota().then((data) => {
+      setQuota(data);
+      if (data && !data.voiceAllowed) setInterviewMode("CHATBOT");
+    });
+  }, []);
 
   // 자동 선택
   //  1) 공고 ID (/interview/setup/:jobPostingId 또는 ?jobPostingId=) → 공고에서 기업·직무 채움 (가장 정확)
@@ -177,6 +189,14 @@ export default function InterviewSetupPage() {
       return;
     }
 
+    // 화면 안내용 사전 확인 (실제 제한은 면접 시작 API 가 검사)
+    if (quota && quota.remaining <= 0) {
+      alert(quota.isDemo
+        ? `체험 계정은 모의 면접을 ${quota.limit}회까지 이용할 수 있습니다. 회원가입 후 이어서 이용해 주세요.`
+        : `무료 모의 면접 ${quota.limit}회를 모두 사용했습니다.`);
+      return;
+    }
+
     const setupData = {
       company_name:      selectedCompany,
       job_name:          selectedJobName,
@@ -322,8 +342,13 @@ export default function InterviewSetupPage() {
               className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white p-4"
             >
               <option value="CHATBOT">CHATBOT</option>
-              <option value="TTS">TTS</option>
+              <option value="TTS" disabled={!voiceAllowed}>
+                {voiceAllowed ? "TTS" : "TTS (회원가입 후 이용)"}
+              </option>
             </select>
+            {!voiceAllowed && (
+              <p className="mt-2 text-[12px] text-slate-400">체험 계정은 텍스트(챗봇) 면접만 가능합니다.</p>
+            )}
           </div>
 
         </div>
@@ -335,9 +360,16 @@ export default function InterviewSetupPage() {
           </div>
         )}
 
+        {quota && (
+          <div className="mt-6 text-[13px] text-slate-500 dark:text-slate-400">
+            모의 면접 잔여 <strong className={quota.remaining > 0 ? "text-blue-600" : "text-rose-500"}>{quota.remaining}회</strong>
+            {" "}/ {quota.limit}회{quota.isDemo ? " (체험 계정)" : ""}
+          </div>
+        )}
+
         <button
           onClick={handleStartInterview}
-          className="mt-10 w-full rounded-xl bg-blue-600 hover:bg-blue-700 py-4 text-lg font-black text-white transition-colors"
+          className="mt-4 w-full rounded-xl bg-blue-600 hover:bg-blue-700 py-4 text-lg font-black text-white transition-colors"
         >
           모의 면접 시작
         </button>
