@@ -10,6 +10,7 @@ import {
 
 import ReportRadarChart from "../../components/report/ReportRadarChart";
 import { getReportData, requestDetailAnalysis } from "../../services/reportService";
+import CareerMismatchBadge from "../../components/common/CareerMismatchBadge";
 
 /* ── 메타 ── */
 const METRIC_META = {
@@ -218,6 +219,7 @@ export default function ReportPage() {
               마감 {deadlineDate}
             </span>
           )}
+          <CareerMismatchBadge careerCheck={resumeAnalysis?.careerCheck} />
         </div>
 
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -377,7 +379,7 @@ export default function ReportPage() {
       {/* ══ 하단 버튼 ══ */}
       <div className="flex gap-3">
         <button
-          onClick={() => navigate(`/interview/setup?company=${encodeURIComponent(companyName ?? "")}&job=${encodeURIComponent(jobName ?? "")}`)}
+          onClick={() => navigate(`/interview/setup/${jobPostingId}`)}
           className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 py-4 font-black text-white transition-colors text-[15px]"
         >
           면접 보러 가기

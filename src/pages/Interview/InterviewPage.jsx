@@ -5,6 +5,7 @@ import PageHero from "../../components/common/PageHero";
 import MembershipModal from "../../components/common/MembershipModal";
 import { FREE_INTERVIEW_LIMIT as FREE_LIMIT } from "../../constants/usageConfig";
 import api from "../../api/axios.js";
+import { getInterviewQuota } from "../../services/interviewService";
 
 function modeLabel(mode) {
   if (!mode) return "💬 챗봇";
@@ -16,7 +17,7 @@ function getMemberId() {
 }
 
 /* ── 횟수 초과 알림 모달 ─────────────────────────────────────── */
-function ExhaustedModal({ onClose, onUpgrade }) {
+function ExhaustedModal({ onClose, onUpgrade, limit = FREE_LIMIT }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="relative w-full max-w-[400px] rounded-[28px] bg-white p-8 shadow-2xl mx-4">
@@ -24,7 +25,7 @@ function ExhaustedModal({ onClose, onUpgrade }) {
         <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-2xl">🔒</div>
         <h2 className="text-[20px] font-black text-slate-900">무료 면접 횟수를 모두 사용했어요</h2>
         <p className="mt-2 text-[14px] leading-6 text-slate-500">
-          무료 제공 면접 <strong>{FREE_LIMIT}회</strong>를 모두 사용했습니다.<br />
+          무료 제공 면접 <strong>{limit}회</strong>를 모두 사용했습니다.<br />
           멤버십에 가입하면 횟수 제한 없이 모의 면접을 이용할 수 있어요.
         </p>
         <ul className="mt-5 space-y-2 rounded-2xl bg-blue-50 p-4 text-[13px] text-slate-700">
@@ -49,6 +50,8 @@ export default function InterviewPage() {
   const [showMembership, setShowMembership] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  // 서버 기준 한도 (체험 계정은 횟수가 더 적고 음성 면접 불가). 실패 시 화면 기본값 사용
+  const [quota, setQuota] = useState(null);
 
   useEffect(() => {
     const memberId = getMemberId();
@@ -58,6 +61,8 @@ export default function InterviewPage() {
       .then(res => setSessions(res.data?.data ?? []))
       .catch(err => console.error("[InterviewPage] 세션 목록 로드 실패:", err))
       .finally(() => setLoading(false));
+
+    getInterviewQuota().then(setQuota);
   }, []);
 
   const maxScore = useMemo(() => {
@@ -65,8 +70,9 @@ export default function InterviewPage() {
     return Math.max(...sessions.map(s => Number(s.totalScore ?? 0)));
   }, [sessions]);
 
-  const usedCount  = sessions.length;
-  const freeRemain = Math.max(0, FREE_LIMIT - usedCount);
+  const limit      = quota?.limit ?? FREE_LIMIT;
+  const usedCount  = quota?.used ?? sessions.length;
+  const freeRemain = quota?.remaining ?? Math.max(0, limit - usedCount);
 
   function handleStartInterview() {
     if (freeRemain === 0) setShowExhausted(true);
@@ -82,6 +88,7 @@ export default function InterviewPage() {
 
       {showExhausted && (
         <ExhaustedModal
+          limit={limit}
           onClose={() => setShowExhausted(false)}
           onUpgrade={() => { setShowExhausted(false); setShowMembership(true); }}
         />
@@ -105,10 +112,10 @@ export default function InterviewPage() {
           <div className="flex-1">
             <p className="text-[13px] font-bold text-slate-400 mb-4">면접 이용 현황</p>
             <div className="flex items-center gap-3 mb-4">
-              {Array.from({ length: FREE_LIMIT }).map((_, i) => (
+              {Array.from({ length: limit }).map((_, i) => (
                 <div key={i} className={`h-4 w-4 rounded-full transition-colors ${i < usedCount ? "bg-blue-600" : "bg-slate-200"}`} />
               ))}
-              <span className="ml-1 text-[13px] text-slate-500">{usedCount}/{FREE_LIMIT} 사용</span>
+              <span className="ml-1 text-[13px] text-slate-500">{usedCount}/{limit} 사용</span>
             </div>
             <div className="flex gap-8">
               <div>
@@ -121,7 +128,14 @@ export default function InterviewPage() {
               </div>
             </div>
             {freeRemain === 0 && (
-              <p className="mt-3 text-[12px] text-rose-500">무료 횟수를 모두 사용했습니다. 멤버십 가입 후 계속 이용하세요.</p>
+              <p className="mt-3 text-[12px] text-rose-500">
+                {quota?.isDemo
+                  ? "체험 계정의 면접 횟수를 모두 사용했습니다. 회원가입 후 계속 이용하세요."
+                  : "무료 횟수를 모두 사용했습니다. 멤버십 가입 후 계속 이용하세요."}
+              </p>
+            )}
+            {quota?.isDemo && (
+              <p className="mt-3 text-[12px] text-slate-400">체험 계정은 텍스트(챗봇) 면접만 가능합니다. 음성 면접은 회원가입 후 이용하세요.</p>
             )}
           </div>
           <div className="hidden lg:block w-px h-24 bg-slate-100" />
@@ -154,7 +168,12 @@ export default function InterviewPage() {
                   <p className="mb-1 text-[12px] font-medium text-slate-400">
                     {modeLabel(item.interviewType)} · {item.interviewLevel ?? "-"}난이도 · AI 면접관
                   </p>
-                  <h3 className="text-[22px] font-black text-slate-900 leading-tight">{item.companyName ?? "-"}</h3>
+                  <h3 className="text-[22px] font-black text-slate-900 leading-tight">
+                    {item.companyName ?? "-"}
+                    {item.isSample === "Y" && (
+                      <span className="ml-2 align-middle rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-bold text-violet-500">샘플</span>
+                    )}
+                  </h3>
                   <p className="mt-1 text-[14px] text-slate-500">{item.jobName ?? "-"}</p>
                   <p className="mt-2 flex items-center gap-1 text-[12px] text-slate-400">
                     <span>📅</span>

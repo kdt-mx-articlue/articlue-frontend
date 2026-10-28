@@ -119,6 +119,25 @@ export async function finishInterview(sessionId) {
   return res.data;
 }
 
+/* ─── 모의 면접 이용 한도 ─── */
+// GET /api/interviews/quota → { isDemo, limit, used, remaining, voiceAllowed }
+// 실제 제한은 면접 시작 API 가 검사하고, 화면은 표시·안내에만 사용
+export async function getInterviewQuota() {
+  const memberId = localStorage.getItem("memberId");
+  if (!memberId) return null;
+  try {
+    const res = await axiosInstance.get("/interviews/quota", { params: { memberId } });
+    return res.data?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/* 면접 시작 실패 사유 — 서버가 보낸 문구(한도 초과, 체험 계정 음성 불가 등) 우선 */
+export function getStartErrorMessage(err, fallback) {
+  return err?.response?.data?.message || fallback;
+}
+
 export async function getSessions() {
   const memberId = localStorage.getItem("memberId");
   if (!memberId) return [];

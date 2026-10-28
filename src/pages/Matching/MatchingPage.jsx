@@ -56,6 +56,8 @@ export default function MatchingPage() {
             overallScore:  matchData.overallScore,
             overall_score: matchData.overallScore,
             metrics:       matchData.metrics,
+
+            careerCheck:   matchData.careerCheck,
           });
         }
       })
@@ -99,6 +101,8 @@ export default function MatchingPage() {
             overallScore:  matchData.overallScore,
             overall_score: matchData.overallScore,
             metrics:       matchData.metrics,
+
+            careerCheck:   matchData.careerCheck,
           };
         }
       }
@@ -122,6 +126,13 @@ export default function MatchingPage() {
   // 추천 기업 맵 (jobPostingId → recommendation 데이터) — 관심 기업 overallScore 보완용
   const recommendationMap = new Map(
     companies.map((c) => [String(c.jobPostingId ?? c.job_posting_id), c])
+  );
+
+  // 검색 드롭다운용 careerMap (jobPostingId → 경력 요건 판정)
+  const careerMap = Object.fromEntries(
+    companies
+      .filter((c) => c.careerCheck)
+      .map((c) => [String(c.jobPostingId ?? c.job_posting_id), c.careerCheck])
   );
 
   // 검색 드롭다운용 scoreMap (jobPostingId → overallScore)
@@ -183,6 +194,7 @@ export default function MatchingPage() {
         onFavorite={handleAddFromSearch}
         favoriteKeys={favoriteKeys}
         scoreMap={scoreMap}
+        careerMap={careerMap}
       />
 
       {/* 관심 기업 */}

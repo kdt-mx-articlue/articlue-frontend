@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* src/index.css 와 동일 — 이 파일도 tailwindcss 를 따로 import 하므로 같은 dark 기준 필요 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root{
   --blue-50:#eff6ff;
   --blue-100:#dbeafe;

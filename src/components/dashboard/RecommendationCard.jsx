@@ -1,4 +1,5 @@
 import CompanyCard from "./CompanyCard";
+import CareerMismatchBadge from "../common/CareerMismatchBadge";
 
 export default function RecommendationCard({ company, onFavoriteChange, onGenerateCoverLetter }) {
   return <CompanyCard company={company} onFavoriteChange={onFavoriteChange} onGenerateCoverLetter={onGenerateCoverLetter} />;
@@ -104,6 +105,12 @@ export default function RecommendationCard({
           {score.toFixed(2)}%
         </div>
 
+        {company?.careerCheck?.mismatch && (
+          <div className="mt-2">
+            <CareerMismatchBadge careerCheck={company.careerCheck} />
+          </div>
+        )}
+
         <div
           className="
             mt-4
@@ -149,7 +156,7 @@ export default function RecommendationCard({
           <button
             onClick={() =>
               navigate(
-                `/interview/${company.job_posting_id}`
+                `/interview/setup/${company.job_posting_id}`
               )
             }
             className="
