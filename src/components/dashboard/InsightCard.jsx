@@ -6,7 +6,14 @@
  *   article - { id, title, summary, url, thumbnail, source, publishedAt }
  */
 export default function InsightCard({ article }) {
-  const { title, summary, url, thumbnail, source = "DBR", publishedAt } = article;
+  const { title, summary: rawSummary, url, thumbnail, source = "DBR", publishedAt } = article;
+
+  /* 요약이 문자열이 아니어도({ text: [...] }) 카드가 깨지지 않도록 문자열로 맞춤 */
+  const summary = typeof rawSummary === "string"
+    ? rawSummary
+    : Array.isArray(rawSummary?.text)
+      ? rawSummary.text.join("\n")
+      : "";
 
   /* publishedAt → "YYYY.MM.DD" 포맷 */
   const dateLabel = (() => {
