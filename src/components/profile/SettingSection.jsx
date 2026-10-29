@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../../services/authApi";
+import { clearAuthStorage } from "../../utils/auth";
 
 /* ── 알림 설정 모달 ────────────────────────────────── */
 function NotificationModal({ onClose }) {
@@ -219,14 +221,16 @@ export default function SettingSection() {
   }
 
   // 로그아웃 처리
-  function handleLogout() {
-    localStorage.removeItem("articlue_current_user");
+  async function handleLogout() {
+    await logout();
+    clearAuthStorage();
     setModal(null);
     navigate("/login");
   }
 
   // 회원 탈퇴 처리
-  function handleWithdraw() {
+  async function handleWithdraw() {
+    await logout();
     localStorage.clear();
     setModal(null);
     navigate("/login");

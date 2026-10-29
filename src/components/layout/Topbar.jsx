@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getCurrentUser, clearAuthStorage, isAuthenticated } from "../../utils/auth";
 import { loadResume } from "../../services/resumeApi";
+import { logout } from "../../services/authApi";
 import { useResumeStore } from "../../store/resumeStore";
 
 export default function Topbar() {
@@ -43,9 +44,10 @@ export default function Topbar() {
     return "Articlue";
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const confirmed = window.confirm("로그아웃 하시겠습니까?");
     if (!confirmed) return;
+    await logout();
     clearAuthStorage();
     navigate("/login");
   };
