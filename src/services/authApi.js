@@ -10,6 +10,15 @@ export async function login(payload) {
   return response.data;
 }
 
+// 서버 세션 쿠키 삭제 — 실패해도(이미 만료 등) 화면 로그아웃은 계속
+export async function logout() {
+  try {
+    await api.post("/auth/logout");
+  } catch (error) {
+    console.warn("로그아웃 요청 실패", error);
+  }
+}
+
 export async function getMe() {
   const response = await api.get("/members/me");
   return response.data;

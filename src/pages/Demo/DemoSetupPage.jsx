@@ -415,7 +415,12 @@ export default function DemoSetupPage() {
         await createDemoSession();
       } catch (e) {
         console.error(e);
-        setError("체험 계정을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        // 429: 같은 네트워크 체험 계정 수 제한 등 — 서버 안내 문구를 그대로 보여 준다
+        setError(
+          e.response?.status === 429 && e.response?.data?.message
+            ? e.response.data.message
+            : "체험 계정을 만들지 못했습니다. 잠시 후 다시 시도해 주세요."
+        );
         setLoadingKey(null);
         return;
       }
